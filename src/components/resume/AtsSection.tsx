@@ -1,53 +1,10 @@
 import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileText, CheckCircle2, AlertTriangle, Lightbulb, XCircle, X, Loader2 } from 'lucide-react';
+import { Upload, FileText, CheckCircle2, AlertTriangle, Lightbulb, XCircle, X, Loader2, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 
 const ATS_WEBHOOK_URL = 'https://figo6788.app.n8n.cloud/webhook-test/resume-ats';
-
-const feedbackIcons = {
-  strength: CheckCircle2,
-  missing: XCircle,
-  formatting: AlertTriangle,
-  suggestion: Lightbulb,
-} as const;
-
-const feedbackColors = {
-  strength: 'text-emerald-400',
-  missing: 'text-red-400',
-  formatting: 'text-amber-400',
-  suggestion: 'text-sky-400',
-} as const;
-
-const feedbackLabels = {
-  strength: 'Strength',
-  missing: 'Missing Keyword',
-  formatting: 'Formatting',
-  suggestion: 'Suggestion',
-} as const;
-
-type FeedbackType = keyof typeof feedbackIcons;
-
-const FeedbackRow = ({ type, text, delay }: { type: FeedbackType; text: string; delay: number }) => {
-  const Icon = feedbackIcons[type];
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay }}
-      className="flex items-start gap-3 p-3 rounded-lg bg-secondary/20"
-    >
-      <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${feedbackColors[type]}`} />
-      <div>
-        <span className={`text-[10px] uppercase tracking-wider font-semibold ${feedbackColors[type]}`}>
-          {feedbackLabels[type]}
-        </span>
-        <p className="text-sm text-foreground/80">{text}</p>
-      </div>
-    </motion.div>
-  );
-};
 
 interface AtsWebhookResponse {
   ats_score: number;
@@ -56,6 +13,82 @@ interface AtsWebhookResponse {
   formatting_issues: string[];
   suggestions: string[];
 }
+
+/* ── Score helpers ─────────────────────────────────── */
+
+const getScoreColor = (s: number) =>
+  s >= 80 ? 'text-emerald-400' : s >= 60 ? 'text-amber-400' : 'text-red-400';
+
+const getScoreBarColor = (s: number) =>
+  s >= 80 ? 'bg-emerald-500' : s >= 60 ? 'bg-amber-500' : 'bg-red-500';
+
+const getScoreRingColor = (s: number) =>
+  s >= 80 ? 'stroke-emerald-500' : s >= 60 ? 'stroke-amber-500' : 'stroke-red-500';
+
+/* ── Tiny sub-components ──────────────────────────── */
+
+const SectionHeader = ({ icon: Icon, label, color }: { icon: React.ElementType; label: string; color: string }) => (
+  <div className="flex items-center gap-2 mb-3">
+    <Icon className={`w-4 h-4 ${color}`} />
+    <h4 className={`text-sm font-semibold uppercase tracking-wider ${color}`}>{label}</h4>
+    <div className="flex-1 h-px bg-border/40" />
+  </div>
+);
+
+const FeedbackCard = ({ text, delay }: { text: string; delay: number }) => (
+  <motion.div
+    initial={{ opacity: 0, x: -8 }}
+    animate={{ opacity: 1, x: 0 }}
+    transition={{ delay }}
+    className="p-3 rounded-lg bg-secondary/20 border border-border/30"
+  >
+    <p className="text-sm text-foreground/85 leading-relaxed">{text}</p>
+  </motion.div>
+);
+
+const KeywordChip = ({ text, delay }: { text: string; delay: number }) => (
+  <motion.span
+    initial={{ opacity: 0, scale: 0.9 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ delay }}
+    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-red-500/15 text-red-400 border border-red-500/20"
+  >
+    <XCircle className="w-3 h-3" />
+    {text}
+  </motion.span>
+);
+
+/* ── Score Ring (SVG circular indicator) ──────────── */
+
+const ScoreRing = ({ score }: { score: number }) => {
+  const radius = 54;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (score / 100) * circumference;
+
+  return (
+    <div className="relative w-36 h-36 mx-auto">
+      <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r={radius} fill="none" className="stroke-secondary" strokeWidth="8" />
+        <motion.circle
+          cx="60" cy="60" r={radius} fill="none"
+          className={getScoreRingColor(score)}
+          strokeWidth="8"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 1.2, ease: 'easeOut' }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className={`text-4xl font-bold ${getScoreColor(score)}`}>{score}</span>
+        <span className="text-xs text-muted-foreground">/100</span>
+      </div>
+    </div>
+  );
+};
+
+/* ── Main Component ───────────────────────────────── */
 
 const AtsSection = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -119,32 +152,20 @@ const AtsSection = () => {
     [handleFile]
   );
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
   const handleDragLeave = () => setIsDragging(false);
 
   const clearUpload = () => {
     setUploadedFile(null);
     setAtsResult(null);
+    setError(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-400';
-    if (score >= 60) return 'text-amber-400';
-    return 'text-red-400';
-  };
-
-  const getScoreBarColor = (score: number) => {
-    if (score >= 80) return 'bg-emerald-500';
-    if (score >= 60) return 'bg-amber-500';
-    return 'bg-red-500';
-  };
-
-  const canUpload = !isAnalyzing;
+  const hasStrengths = (atsResult?.strengths?.length ?? 0) > 0;
+  const hasMissing = (atsResult?.missing_keywords?.length ?? 0) > 0;
+  const hasFormatting = (atsResult?.formatting_issues?.length ?? 0) > 0;
+  const hasSuggestions = (atsResult?.suggestions?.length ?? 0) > 0;
 
   return (
     <motion.div
@@ -154,12 +175,12 @@ const AtsSection = () => {
       className="glass-card p-6"
     >
       <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
-        <FileText className="w-5 h-5 text-primary" />
+        <BarChart3 className="w-5 h-5 text-primary" />
         Upload Resume for ATS Check
       </h3>
 
-      {/* Drop zone */}
-      {!uploadedFile && canUpload && (
+      {/* ── Drop zone ── */}
+      {!uploadedFile && !isAnalyzing && (
         <div
           onDrop={handleDrop}
           onDragOver={handleDragOver}
@@ -172,9 +193,7 @@ const AtsSection = () => {
           onClick={() => fileInputRef.current?.click()}
         >
           <Upload className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground mb-1">
-            Drag & drop your resume PDF here
-          </p>
+          <p className="text-sm text-muted-foreground mb-1">Drag & drop your resume PDF here</p>
           <p className="text-xs text-muted-foreground/60 mb-4">PDF only • Max 5 MB</p>
           <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
             Upload PDF
@@ -192,16 +211,16 @@ const AtsSection = () => {
         </div>
       )}
 
-      {/* Analyzing state */}
+      {/* ── Analyzing ── */}
       {uploadedFile && isAnalyzing && (
-        <div className="flex items-center gap-3 p-4 rounded-lg bg-secondary/30">
+        <div className="flex items-center gap-3 p-4 rounded-lg bg-secondary/30 border border-border/30">
           <Loader2 className="w-5 h-5 text-primary animate-spin" />
           <span className="text-sm flex-1 truncate">{uploadedFile.name}</span>
-          <span className="text-xs text-muted-foreground">Analyzing…</span>
+          <span className="text-xs text-muted-foreground animate-pulse">Analyzing…</span>
         </div>
       )}
 
-      {/* Error state */}
+      {/* ── Error ── */}
       {uploadedFile && !isAnalyzing && error && (
         <div className="space-y-3">
           <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30">
@@ -218,17 +237,17 @@ const AtsSection = () => {
         </div>
       )}
 
-      {/* ATS Result */}
+      {/* ── ATS Result ── */}
       <AnimatePresence>
         {atsResult && uploadedFile && !isAnalyzing && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="space-y-5"
+            className="space-y-6"
           >
-            {/* File + clear */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30">
+            {/* File bar */}
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 border border-border/30">
               <FileText className="w-4 h-4 text-primary" />
               <span className="text-sm flex-1 truncate">{uploadedFile.name}</span>
               <button onClick={clearUpload} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -236,42 +255,77 @@ const AtsSection = () => {
               </button>
             </div>
 
-            {/* Score */}
-            <div className="text-center py-4">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+            {/* Score ring */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.15 }}
+              className="py-2"
+            >
+              <p className="text-xs uppercase tracking-widest text-muted-foreground text-center mb-4">
                 ATS Compatibility Score
               </p>
-              <span className={`text-5xl font-bold ${getScoreColor(atsResult.ats_score)}`}>
-                {atsResult.ats_score}
-              </span>
-              <span className="text-lg text-muted-foreground">/100</span>
-              <div className="mt-3 max-w-xs mx-auto">
-                <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
+              <ScoreRing score={atsResult.ats_score} />
+              {/* Linear bar below ring */}
+              <div className="mt-4 max-w-xs mx-auto">
+                <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${atsResult.ats_score}%` }}
-                    transition={{ duration: 1, ease: 'easeOut' }}
+                    transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
                     className={`h-full rounded-full ${getScoreBarColor(atsResult.ats_score)}`}
                   />
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Feedback sections */}
-            <div className="space-y-2">
-              {atsResult.strengths?.length > 0 && atsResult.strengths.map((text, idx) => (
-                <FeedbackRow key={`s-${idx}`} type="strength" text={text} delay={idx * 0.08} />
-              ))}
-              {atsResult.missing_keywords?.length > 0 && atsResult.missing_keywords.map((text, idx) => (
-                <FeedbackRow key={`m-${idx}`} type="missing" text={text} delay={(atsResult.strengths?.length ?? 0 + idx) * 0.08} />
-              ))}
-              {atsResult.formatting_issues?.length > 0 && atsResult.formatting_issues.map((text, idx) => (
-                <FeedbackRow key={`f-${idx}`} type="formatting" text={text} delay={idx * 0.08} />
-              ))}
-              {atsResult.suggestions?.length > 0 && atsResult.suggestions.map((text, idx) => (
-                <FeedbackRow key={`sg-${idx}`} type="suggestion" text={text} delay={idx * 0.08} />
-              ))}
-            </div>
+            {/* ── Strengths ── */}
+            {hasStrengths && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+                <SectionHeader icon={CheckCircle2} label="Strengths" color="text-emerald-400" />
+                <div className="space-y-2">
+                  {atsResult.strengths.map((text, i) => (
+                    <FeedbackCard key={`s-${i}`} text={text} delay={0.35 + i * 0.06} />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* ── Missing Keywords ── */}
+            {hasMissing && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }}>
+                <SectionHeader icon={XCircle} label="Missing Keywords" color="text-red-400" />
+                <div className="flex flex-wrap gap-2">
+                  {atsResult.missing_keywords.map((kw, i) => (
+                    <KeywordChip key={`m-${i}`} text={kw} delay={0.5 + i * 0.05} />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* ── Formatting Issues ── */}
+            {hasFormatting && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
+                <SectionHeader icon={AlertTriangle} label="Formatting" color="text-amber-400" />
+                <div className="space-y-2">
+                  {atsResult.formatting_issues.map((text, i) => (
+                    <FeedbackCard key={`f-${i}`} text={text} delay={0.65 + i * 0.06} />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* ── Suggestions ── */}
+            {hasSuggestions && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.75 }}>
+                <SectionHeader icon={Lightbulb} label="Suggestions" color="text-sky-400" />
+                <div className="space-y-2">
+                  {atsResult.suggestions.map((text, i) => (
+                    <FeedbackCard key={`sg-${i}`} text={text} delay={0.8 + i * 0.06} />
+                  ))}
+                </div>
+              </motion.div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

@@ -56,7 +56,8 @@ const CoursesPage = () => {
       if (!response.ok) throw new Error('Webhook request failed');
 
       const data = await response.json();
-      const parsed: Course[] = Array.isArray(data?.courses) ? data.courses : [];
+      const root = Array.isArray(data) ? data[0] : data;
+      const parsed: Course[] = Array.isArray(root?.courses) ? root.courses : [];
       setCourses(parsed);
     } catch (error) {
       console.error('Failed to fetch courses:', error);

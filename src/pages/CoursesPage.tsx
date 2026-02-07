@@ -1,25 +1,21 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, Search, Clock, Star, Award, Play, ExternalLink } from 'lucide-react';
+import { BookOpen, Search, Clock, Star, ExternalLink, Loader2 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-export interface Course {
+interface Course {
   title: string;
   platform: string;
-  type: string;
   level: string;
   duration: string;
-  rating: number;
-  free: boolean;
-  url?: string;
+  rating: string;
+  pricing: string;
+  url: string;
 }
 
-export interface CourseCategory {
-  domain: string;
-  courses: Course[];
-}
+const WEBHOOK_URL = 'https://figo6788.app.n8n.cloud/webhook-test/courses';
 
 const getLevelColor = (level: string) => {
   switch (level) {
@@ -37,14 +33,37 @@ const getLevelColor = (level: string) => {
 const CoursesPage = () => {
   const [domainInput, setDomainInput] = useState('');
   const [selectedDomain, setSelectedDomain] = useState('');
-  const [courses, setCourses] = useState<CourseCategory[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleFindCourses = () => {
-    if (!domainInput.trim()) return;
-    setSelectedDomain(domainInput.trim());
+  const handleFindCourses = async () => {
+    const domain = domainInput.trim();
+    if (!domain) return;
+
+    setSelectedDomain(domain);
     setCourses([]);
     setHasSearched(true);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain }),
+      });
+
+      if (!response.ok) throw new Error('Webhook request failed');
+
+      const data = await response.json();
+      const parsed: Course[] = Array.isArray(data?.courses) ? data.courses : [];
+      setCourses(parsed);
+    } catch (error) {
+      console.error('Failed to fetch courses:', error);
+      setCourses([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -79,19 +98,24 @@ const CoursesPage = () => {
                 value={domainInput}
                 onChange={(e) => setDomainInput(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && domainInput.trim()) handleFindCourses();
+                  if (e.key === 'Enter' && domainInput.trim() && !isLoading) handleFindCourses();
                 }}
                 placeholder="Enter a domain (e.g. Frontend, Backend, Pentesting, Data Science…)"
                 className="pl-10 h-12 bg-secondary/50 border-border focus:border-primary focus:ring-primary/30 text-base"
+                disabled={isLoading}
               />
             </div>
             <Button
               onClick={handleFindCourses}
-              disabled={!domainInput.trim()}
+              disabled={!domainInput.trim() || isLoading}
               className="glow-button h-12 px-8 text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:hover:transform-none"
             >
-              <BookOpen className="w-5 h-5 mr-2" />
-              Find Courses
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+              ) : (
+                <BookOpen className="w-5 h-5 mr-2" />
+              )}
+              {isLoading ? 'Searching…' : 'Find Courses'}
             </Button>
           </div>
         </motion.div>
@@ -111,6 +135,20 @@ const CoursesPage = () => {
               Enter a domain to discover relevant courses.
             </p>
           </motion.div>
+        ) : isLoading ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="text-center py-20"
+          >
+            <div className="glass-card inline-flex p-6 rounded-full mb-6">
+              <Loader2 className="w-10 h-10 text-primary animate-spin" />
+            </div>
+            <p className="text-muted-foreground text-lg">
+              Finding courses for <span className="text-primary font-semibold">"{selectedDomain}"</span>…
+            </p>
+          </motion.div>
         ) : courses.length === 0 ? (
           <motion.div
             initial={{ opacity: 0 }}
@@ -122,91 +160,85 @@ const CoursesPage = () => {
               <BookOpen className="w-10 h-10 text-muted-foreground" />
             </div>
             <p className="text-muted-foreground text-lg">
-              Ready to load courses for <span className="text-primary font-semibold">"{selectedDomain}"</span>
-            </p>
-            <p className="text-muted-foreground text-sm mt-2">
-              Course recommendations will appear here once connected.
+              No courses found for <span className="text-primary font-semibold">"{selectedDomain}"</span>.
             </p>
           </motion.div>
         ) : (
-          <div className="space-y-12">
-            {courses.map((category, catIndex) => (
-              <motion.div
-                key={category.domain}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: catIndex * 0.1 }}
-              >
-                <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-                  <BookOpen className="w-6 h-6 text-primary" />
-                  {category.domain}
-                </h2>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+              <BookOpen className="w-6 h-6 text-primary" />
+              Courses for "{selectedDomain}"
+            </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {category.courses.map((course, index) => (
-                    <motion.div
-                      key={course.title}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="feature-card group"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                          {course.type === 'Certification' && <Award className="w-5 h-5 text-amber-400" />}
-                          {course.type === 'Course' && <BookOpen className="w-5 h-5 text-primary" />}
-                          {course.type === 'Playlist' && <Play className="w-5 h-5 text-red-400" />}
-                          <span className="text-xs font-medium text-muted-foreground">{course.platform}</span>
-                        </div>
-                        {course.free ? (
-                          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-green-500/20 text-green-400">
-                            FREE
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-primary/20 text-primary">
-                            PAID
-                          </span>
-                        )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {courses.map((course, index) => {
+                const isFree = course.pricing?.toLowerCase() === 'free';
+
+                return (
+                  <motion.div
+                    key={`${course.title}-${index}`}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.08 }}
+                    className="feature-card group"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="w-5 h-5 text-primary" />
+                        <span className="text-xs font-medium text-muted-foreground">{course.platform}</span>
                       </div>
-
-                      <h3 className="font-bold mb-3 group-hover:text-primary transition-colors">
-                        {course.title}
-                      </h3>
-
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        <span className={`px-2 py-1 rounded-full text-xs ${getLevelColor(course.level)}`}>
-                          {course.level}
+                      {isFree ? (
+                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-green-500/20 text-green-400">
+                          FREE
                         </span>
-                        <span className="px-2 py-1 rounded-full text-xs bg-secondary text-secondary-foreground flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {course.duration}
-                        </span>
-                        <span className="px-2 py-1 rounded-full text-xs bg-secondary text-secondary-foreground flex items-center gap-1">
-                          <Star className="w-3 h-3 text-amber-400" />
-                          {course.rating}
-                        </span>
-                      </div>
-
-                      {course.url ? (
-                        <a
-                          href={course.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-sm text-primary font-medium hover:gap-3 transition-all cursor-pointer"
-                        >
-                          Start Learning <ExternalLink className="w-4 h-4" />
-                        </a>
                       ) : (
-                        <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                          Start Learning <ExternalLink className="w-4 h-4" />
+                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-primary/20 text-primary">
+                          PAID
                         </span>
                       )}
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                    </div>
+
+                    <h3 className="font-bold mb-3 group-hover:text-primary transition-colors">
+                      {course.title}
+                    </h3>
+
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <span className={`px-2 py-1 rounded-full text-xs ${getLevelColor(course.level)}`}>
+                        {course.level}
+                      </span>
+                      <span className="px-2 py-1 rounded-full text-xs bg-secondary text-secondary-foreground flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {course.duration}
+                      </span>
+                      <span className="px-2 py-1 rounded-full text-xs bg-secondary text-secondary-foreground flex items-center gap-1">
+                        <Star className="w-3 h-3 text-amber-400" />
+                        {course.rating}
+                      </span>
+                    </div>
+
+                    {course.url ? (
+                      <a
+                        href={course.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-sm text-primary font-medium hover:gap-3 transition-all cursor-pointer"
+                      >
+                        Start Learning <ExternalLink className="w-4 h-4" />
+                      </a>
+                    ) : (
+                      <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                        Start Learning <ExternalLink className="w-4 h-4" />
+                      </span>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
         )}
       </div>
     </Layout>

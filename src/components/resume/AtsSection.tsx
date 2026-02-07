@@ -116,7 +116,11 @@ const AtsSection = () => {
         throw new Error(`Analysis failed (${response.status})`);
       }
 
-      const data: AtsWebhookResponse = await response.json();
+      const raw = await response.json();
+      const data: AtsWebhookResponse = Array.isArray(raw) ? raw[0] : raw;
+      if (!data || typeof data.ats_score !== 'number') {
+        throw new Error('Invalid response from ATS analysis');
+      }
       setAtsResult(data);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Analysis failed';

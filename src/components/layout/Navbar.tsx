@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Bell, Moon, Sun, User, Menu } from 'lucide-react';
+import { Search, Bell, Moon, Sun, User, Menu, LogOut } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -9,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/hooks/useAuth';
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -17,11 +19,25 @@ interface NavbarProps {
 const Navbar = ({ onMenuClick }: NavbarProps) => {
   const [isDark, setIsDark] = useState(true);
   const [searchFocused, setSearchFocused] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const toggleTheme = () => {
     setIsDark(!isDark);
     document.documentElement.classList.toggle('dark');
   };
+
+  const handleLogout = () => {
+    signOut();
+    navigate('/');
+  };
+
+  const initials = user?.name
+    ?.split(' ')
+    .map((n: string) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <header className="sticky top-0 z-30 h-16 border-b border-border/50 bg-background/80 backdrop-blur-xl">
@@ -79,41 +95,49 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />
           </button>
 
-          {/* User menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-lg">
-                <div className="w-8 h-8 rounded-lg bg-glow-gradient flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
+          {user ? (
+            /* Logged-in: Avatar dropdown */
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-lg">
+                  <div className="w-8 h-8 rounded-lg bg-glow-gradient flex items-center justify-center text-sm font-bold text-white">
+                    {initials || <User className="w-4 h-4" />}
+                  </div>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 glass-card">
+                <div className="px-3 py-2 border-b border-border/50">
+                  <p className="text-sm font-medium">{user.name}</p>
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
                 </div>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 glass-card">
-              <DropdownMenuItem className="cursor-pointer">
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                Dashboard
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer text-destructive">
-                Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Auth buttons */}
-          <div className="hidden md:flex items-center gap-2 ml-2">
-            <Button variant="ghost" size="sm">
-              Sign In
-            </Button>
-            <Button size="sm" className="glow-button text-white border-0">
-              Get Started
-            </Button>
-          </div>
+                <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/profile')}>
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/')}>
+                  Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer text-destructive" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            /* Logged-out: Sign In / Get Started */
+            <div className="flex items-center gap-2 ml-2">
+              <Link to="/sign-in">
+                <Button variant="ghost" size="sm">
+                  Sign In
+                </Button>
+              </Link>
+              <Link to="/sign-up">
+                <Button size="sm" className="glow-button text-white border-0 hidden md:inline-flex">
+                  Get Started
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </header>

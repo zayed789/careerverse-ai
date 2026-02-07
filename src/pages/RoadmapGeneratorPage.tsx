@@ -41,6 +41,11 @@ const roadmapPhases = [
 const RoadmapGeneratorPage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [roadmapGenerated, setRoadmapGenerated] = useState(false);
+  const [currentRole, setCurrentRole] = useState('');
+  const [experience, setExperience] = useState('');
+  const [goalRole, setGoalRole] = useState('');
+
+  const isFormValid = currentRole.trim() !== '' && experience.trim() !== '' && goalRole.trim() !== '';
 
   const handleGenerate = () => {
     setIsGenerating(true);
@@ -91,6 +96,8 @@ const RoadmapGeneratorPage = () => {
                     id="role"
                     placeholder="e.g., Junior Developer, Student, Career Switcher"
                     className="bg-secondary/50"
+                    value={currentRole}
+                    onChange={(e) => setCurrentRole(e.target.value)}
                   />
                 </div>
 
@@ -105,6 +112,8 @@ const RoadmapGeneratorPage = () => {
                     type="number"
                     placeholder="e.g., 2"
                     className="bg-secondary/50"
+                    value={experience}
+                    onChange={(e) => setExperience(e.target.value)}
                   />
                 </div>
 
@@ -131,6 +140,8 @@ const RoadmapGeneratorPage = () => {
                     id="goal"
                     placeholder="e.g., Senior Full Stack Developer"
                     className="bg-secondary/50"
+                    value={goalRole}
+                    onChange={(e) => setGoalRole(e.target.value)}
                   />
                 </div>
 
@@ -150,8 +161,8 @@ const RoadmapGeneratorPage = () => {
                 {/* Generate Button */}
                 <Button
                   onClick={handleGenerate}
-                  disabled={isGenerating}
-                  className="glow-button text-white border-0 h-12 mt-4"
+                  disabled={isGenerating || !isFormValid}
+                  className={`glow-button text-white border-0 h-12 mt-4 transition-all ${!isFormValid ? 'opacity-50 cursor-not-allowed !shadow-none' : ''}`}
                 >
                   {isGenerating ? (
                     <>

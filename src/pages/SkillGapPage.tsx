@@ -20,6 +20,10 @@ const mockResults = {
 const SkillGapPage = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<typeof mockResults | null>(null);
+  const [jobDescription, setJobDescription] = useState('');
+  const [userSkills, setUserSkills] = useState('React, JavaScript, TypeScript, Git, REST APIs, HTML, CSS, Node.js');
+
+  const isFormValid = jobDescription.trim() !== '' && userSkills.trim() !== '';
 
   const handleAnalyze = () => {
     setIsAnalyzing(true);
@@ -68,6 +72,8 @@ const SkillGapPage = () => {
                 <Textarea
                   placeholder="Paste the job description here, or upload a PDF/DOC file..."
                   className="bg-secondary/50 min-h-[200px] mb-4"
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
                 />
                 <div className="flex items-center justify-center p-6 border-2 border-dashed border-border/50 rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
                   <div className="text-center">
@@ -86,15 +92,16 @@ const SkillGapPage = () => {
                 <Textarea
                   placeholder="List your skills (one per line or comma-separated)&#10;&#10;Example:&#10;React&#10;JavaScript&#10;TypeScript&#10;Node.js"
                   className="bg-secondary/50 min-h-[280px]"
-                  defaultValue="React, JavaScript, TypeScript, Git, REST APIs, HTML, CSS, Node.js"
+                  value={userSkills}
+                  onChange={(e) => setUserSkills(e.target.value)}
                 />
               </div>
 
               <div className="md:col-span-2">
                 <Button
                   onClick={handleAnalyze}
-                  disabled={isAnalyzing}
-                  className="w-full glow-button text-white border-0 h-12"
+                  disabled={isAnalyzing || !isFormValid}
+                  className={`w-full glow-button text-white border-0 h-12 transition-all ${!isFormValid ? 'opacity-50 cursor-not-allowed !shadow-none' : ''}`}
                 >
                   {isAnalyzing ? (
                     <motion.div

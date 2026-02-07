@@ -10,7 +10,11 @@ import { Textarea } from '@/components/ui/textarea';
 const ResumeBuilderPage = () => {
   const [skills, setSkills] = useState<string[]>(['React', 'TypeScript', 'Node.js']);
   const [newSkill, setNewSkill] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
 
+  const isFormValid = (firstName.trim() !== '' || lastName.trim() !== '') && skills.length > 0 && jobTitle.trim() !== '';
   const addSkill = () => {
     if (newSkill.trim()) {
       setSkills([...skills, newSkill.trim()]);
@@ -58,11 +62,11 @@ const ResumeBuilderPage = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="firstName">First Name</Label>
-                    <Input id="firstName" placeholder="John" className="bg-secondary/50 mt-1" />
+                    <Input id="firstName" placeholder="John" className="bg-secondary/50 mt-1" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
                   </div>
                   <div>
                     <Label htmlFor="lastName">Last Name</Label>
-                    <Input id="lastName" placeholder="Doe" className="bg-secondary/50 mt-1" />
+                    <Input id="lastName" placeholder="Doe" className="bg-secondary/50 mt-1" value={lastName} onChange={(e) => setLastName(e.target.value)} />
                   </div>
                 </div>
                 <div>
@@ -120,7 +124,7 @@ const ResumeBuilderPage = () => {
               <div className="space-y-4">
                 <div>
                   <Label>Job Title</Label>
-                  <Input placeholder="Software Engineer" className="bg-secondary/50 mt-1" />
+                  <Input placeholder="Software Engineer" className="bg-secondary/50 mt-1" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} />
                 </div>
                 <div>
                   <Label>Company</Label>
@@ -154,7 +158,7 @@ const ResumeBuilderPage = () => {
               </div>
             </div>
 
-            <Button className="w-full glow-button text-white border-0 h-12">
+            <Button disabled={!isFormValid} className={`w-full glow-button text-white border-0 h-12 transition-all ${!isFormValid ? 'opacity-50 cursor-not-allowed !shadow-none' : ''}`}>
               <Download className="w-5 h-5 mr-2" />
               Generate & Download PDF
             </Button>

@@ -1,11 +1,42 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Briefcase, Clock, Target, Building2, Loader2 } from 'lucide-react';
+import { Sparkles, Briefcase, Clock, Target, Building2, Loader2, Award, FolderGit2 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+
+const roadmapPhases = [
+  {
+    title: 'Foundation Strengthening',
+    period: 'Month 1–2',
+    skills: ['Advanced JavaScript', 'TypeScript', 'React Deep Dive', 'Git & GitHub'],
+    certifications: ['Meta Front-End Developer', 'freeCodeCamp JS Algorithms'],
+    projects: ['Portfolio Website', 'Task Manager App'],
+  },
+  {
+    title: 'Backend Mastery',
+    period: 'Month 3–4',
+    skills: ['Node.js', 'Express', 'PostgreSQL', 'REST APIs', 'Authentication'],
+    certifications: ['AWS Cloud Practitioner', 'MongoDB Associate'],
+    projects: ['REST API Service', 'Blog Platform with Auth'],
+  },
+  {
+    title: 'Full-Stack Integration',
+    period: 'Month 5–6',
+    skills: ['System Design', 'Docker', 'CI/CD', 'Testing'],
+    certifications: ['Docker Certified Associate', 'GitHub Actions CI/CD'],
+    projects: ['E-Commerce Full-Stack App', 'Real-Time Chat App'],
+  },
+  {
+    title: 'Senior-Level Readiness',
+    period: 'Month 7–8',
+    skills: ['Architecture Patterns', 'Team Leadership', 'Code Reviews', 'Technical Interviews'],
+    certifications: ['AWS Solutions Architect', 'Google Cloud Associate'],
+    projects: ['Open Source Contribution', 'Microservices Platform'],
+  },
+];
 
 const RoadmapGeneratorPage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -143,52 +174,126 @@ const RoadmapGeneratorPage = () => {
               transition={{ duration: 0.5 }}
               className="space-y-6"
             >
-              <div className="glass-card p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-glow-gradient flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold">Your Personalized Roadmap</h3>
-                    <p className="text-sm text-muted-foreground">Generated based on your profile</p>
-                  </div>
+              {/* Header */}
+              <div className="glass-card p-6 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-glow-gradient flex items-center justify-center shrink-0">
+                  <Sparkles className="w-5 h-5 text-white" />
                 </div>
+                <div>
+                  <h3 className="text-xl font-bold">Your Personalized Roadmap</h3>
+                  <p className="text-sm text-muted-foreground">Generated based on your profile</p>
+                </div>
+              </div>
 
-                {/* Generated roadmap preview */}
-                <div className="space-y-4">
-                  {[
-                    { phase: 'Phase 1 (Month 1-2)', title: 'Foundation Strengthening', skills: ['Advanced JavaScript', 'TypeScript', 'React Deep Dive'] },
-                    { phase: 'Phase 2 (Month 3-4)', title: 'Backend Mastery', skills: ['Node.js Advanced', 'PostgreSQL', 'System Design'] },
-                    { phase: 'Phase 3 (Month 5-6)', title: 'Senior Skills', skills: ['Architecture Patterns', 'Team Leadership', 'Technical Interviews'] },
-                  ].map((phase, index) => (
+              {/* Timeline */}
+              <div className="relative pl-8 sm:pl-12">
+                {/* Dotted vertical line */}
+                <div className="absolute left-[15px] sm:left-[23px] top-0 bottom-0 w-px border-l-2 border-dashed border-primary/40" />
+
+                <div className="space-y-10">
+                  {roadmapPhases.map((phase, index) => (
                     <motion.div
-                      key={phase.phase}
-                      initial={{ opacity: 0, x: -20 }}
+                      key={phase.title}
+                      initial={{ opacity: 0, x: -30 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.2 + index * 0.1 }}
-                      className="p-4 bg-secondary/30 rounded-lg"
+                      transition={{ delay: 0.15 + index * 0.12, duration: 0.5 }}
+                      className="relative"
                     >
-                      <span className="text-xs font-semibold text-primary">{phase.phase}</span>
-                      <h4 className="font-semibold mt-1 mb-2">{phase.title}</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {phase.skills.map((skill) => (
-                          <span key={skill} className="px-2 py-1 text-xs rounded bg-primary/20 text-primary">
-                            {skill}
+                      {/* Timeline dot */}
+                      <div className="absolute -left-8 sm:-left-12 top-1">
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: 0.3 + index * 0.12, type: 'spring', stiffness: 300 }}
+                          className="w-[14px] h-[14px] rounded-full bg-primary border-2 border-background shadow-[0_0_10px_hsl(var(--primary)/0.5)]"
+                        />
+                      </div>
+
+                      {/* Phase card */}
+                      <div className="glass-card p-5 sm:p-6 hover:border-primary/30 transition-colors">
+                        {/* Phase label & time */}
+                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                          <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-primary/20 text-primary">
+                            Phase {index + 1}
                           </span>
-                        ))}
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Clock className="w-3 h-3" />
+                            {phase.period}
+                          </span>
+                        </div>
+
+                        <h4 className="text-lg font-bold mb-4">{phase.title}</h4>
+
+                        {/* Skills */}
+                        <div className="mb-4">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <Target className="w-3.5 h-3.5 text-primary" />
+                            Skills to Learn
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {phase.skills.map((skill) => (
+                              <span key={skill} className="px-2.5 py-1 text-xs rounded-md bg-primary/10 text-primary border border-primary/20">
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Certifications */}
+                        <div className="mb-4">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <Award className="w-3.5 h-3.5 text-amber-400" />
+                            Certifications
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {phase.certifications.map((cert) => (
+                              <span key={cert} className="px-2.5 py-1 text-xs rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                {cert}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Projects */}
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <FolderGit2 className="w-3.5 h-3.5 text-emerald-400" />
+                            Projects to Build
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {phase.projects.map((project) => (
+                              <span key={project} className="px-2.5 py-1 text-xs rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                {project}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </motion.div>
                   ))}
-                </div>
 
-                <Button
-                  onClick={() => setRoadmapGenerated(false)}
-                  variant="outline"
-                  className="mt-6"
-                >
-                  Generate New Roadmap
-                </Button>
+                  {/* End dot */}
+                  <div className="relative">
+                    <div className="absolute -left-8 sm:-left-12 top-0">
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.8, type: 'spring', stiffness: 300 }}
+                        className="w-[14px] h-[14px] rounded-full bg-emerald-400 border-2 border-background shadow-[0_0_10px_hsl(142_71%_45%/0.5)]"
+                      />
+                    </div>
+                    <p className="text-sm font-semibold text-emerald-400">🎯 Goal Achieved — Ready for your target role!</p>
+                  </div>
+                </div>
               </div>
+
+              <Button
+                onClick={() => setRoadmapGenerated(false)}
+                variant="outline"
+                className="mt-2"
+              >
+                Generate New Roadmap
+              </Button>
             </motion.div>
           )}
         </div>

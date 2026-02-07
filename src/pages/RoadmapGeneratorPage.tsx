@@ -57,8 +57,16 @@ const RoadmapGeneratorPage = () => {
 
       const data = await response.json();
 
-      if (data?.roadmap && Array.isArray(data.roadmap)) {
-        setRoadmapPhases(data.roadmap);
+      // Handle n8n response format: [{"output": "<JSON string>"}]
+      let roadmapData = data;
+      if (Array.isArray(data) && data.length > 0 && typeof data[0]?.output === 'string') {
+        roadmapData = JSON.parse(data[0].output);
+      } else if (Array.isArray(data) && data.length > 0 && data[0]?.roadmap) {
+        roadmapData = data[0];
+      }
+
+      if (roadmapData?.roadmap && Array.isArray(roadmapData.roadmap)) {
+        setRoadmapPhases(roadmapData.roadmap);
       } else {
         throw new Error('Invalid response format');
       }

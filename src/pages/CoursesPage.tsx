@@ -13,6 +13,7 @@ export interface Course {
   duration: string;
   rating: number;
   free: boolean;
+  url?: string;
 }
 
 export interface CourseCategory {
@@ -186,9 +187,20 @@ const CoursesPage = () => {
                         </span>
                       </div>
 
-                      <button className="flex items-center gap-2 text-sm text-primary font-medium hover:gap-3 transition-all">
-                        Start Learning <ExternalLink className="w-4 h-4" />
-                      </button>
+                      {course.url ? (
+                        <a
+                          href={course.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-sm text-primary font-medium hover:gap-3 transition-all cursor-pointer"
+                        >
+                          Start Learning <ExternalLink className="w-4 h-4" />
+                        </a>
+                      ) : (
+                        <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                          Start Learning <ExternalLink className="w-4 h-4" />
+                        </span>
+                      )}
                     </motion.div>
                   ))}
                 </div>

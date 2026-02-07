@@ -11,7 +11,7 @@ import {
   ArrowRight,
   BookOpen,
   Briefcase,
-  DollarSign,
+  IndianRupee,
   Award,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -27,7 +27,7 @@ const domains = [
     description: 'Build modern, responsive web applications using cutting-edge technologies.',
     roles: ['Frontend Developer', 'Backend Developer', 'Full Stack Developer'],
     techStack: ['React', 'Node.js', 'TypeScript', 'Next.js', 'Tailwind CSS'],
-    salaryRange: '$70K - $150K',
+    salaryRange: '₹6 LPA – ₹15 LPA',
     topCompanies: ['Google', 'Meta', 'Amazon', 'Netflix', 'Airbnb'],
     skills: ['HTML/CSS', 'JavaScript', 'REST APIs', 'Databases', 'Git'],
     certifications: ['Meta Frontend Developer', 'AWS Certified Developer'],
@@ -40,7 +40,7 @@ const domains = [
     description: 'Transform raw data into actionable insights that drive business decisions.',
     roles: ['Data Analyst', 'Business Analyst', 'BI Developer'],
     techStack: ['Python', 'SQL', 'Tableau', 'Power BI', 'Excel'],
-    salaryRange: '$60K - $120K',
+    salaryRange: '₹5 LPA – ₹12 LPA',
     topCompanies: ['Google', 'Microsoft', 'McKinsey', 'Deloitte', 'IBM'],
     skills: ['Statistics', 'Data Visualization', 'SQL', 'Python', 'Excel'],
     certifications: ['Google Data Analytics', 'IBM Data Analyst'],
@@ -53,7 +53,7 @@ const domains = [
     description: 'Protect organizations from cyber threats and ensure data security.',
     roles: ['Security Analyst', 'Penetration Tester', 'Security Engineer'],
     techStack: ['Kali Linux', 'Wireshark', 'Metasploit', 'Burp Suite', 'Python'],
-    salaryRange: '$80K - $160K',
+    salaryRange: '₹8 LPA – ₹20 LPA',
     topCompanies: ['CrowdStrike', 'Palo Alto', 'Cisco', 'Microsoft', 'FireEye'],
     skills: ['Network Security', 'Ethical Hacking', 'SIEM', 'Incident Response'],
     certifications: ['CompTIA Security+', 'CISSP', 'CEH'],
@@ -66,7 +66,7 @@ const domains = [
     description: 'Design, build, and manage scalable cloud infrastructure.',
     roles: ['Cloud Engineer', 'Cloud Architect', 'DevOps Engineer'],
     techStack: ['AWS', 'Azure', 'GCP', 'Terraform', 'Kubernetes'],
-    salaryRange: '$90K - $180K',
+    salaryRange: '₹10 LPA – ₹25 LPA',
     topCompanies: ['AWS', 'Microsoft', 'Google', 'Oracle', 'Salesforce'],
     skills: ['IaC', 'Containerization', 'CI/CD', 'Networking', 'Linux'],
     certifications: ['AWS Solutions Architect', 'Azure Administrator'],
@@ -79,7 +79,7 @@ const domains = [
     description: 'Design and maintain the backbone of digital communications.',
     roles: ['Network Engineer', 'Network Architect', 'Systems Administrator'],
     techStack: ['Cisco IOS', 'Juniper', 'Python', 'Ansible', 'Wireshark'],
-    salaryRange: '$65K - $130K',
+    salaryRange: '₹5 LPA – ₹14 LPA',
     topCompanies: ['Cisco', 'Juniper', 'AT&T', 'Verizon', 'Arista'],
     skills: ['TCP/IP', 'Routing/Switching', 'Firewalls', 'VPNs', 'Automation'],
     certifications: ['CCNA', 'CCNP', 'CompTIA Network+'],
@@ -92,7 +92,7 @@ const domains = [
     description: 'Build intelligent systems that learn and adapt from data.',
     roles: ['ML Engineer', 'Data Scientist', 'AI Researcher'],
     techStack: ['Python', 'TensorFlow', 'PyTorch', 'Scikit-learn', 'Jupyter'],
-    salaryRange: '$100K - $200K',
+    salaryRange: '₹12 LPA – ₹35 LPA',
     topCompanies: ['OpenAI', 'DeepMind', 'Google', 'Meta', 'NVIDIA'],
     skills: ['Mathematics', 'Deep Learning', 'NLP', 'Computer Vision', 'MLOps'],
     certifications: ['TensorFlow Developer', 'AWS ML Specialty'],
@@ -105,7 +105,7 @@ const domains = [
     description: 'Bridge development and operations for faster, reliable deployments.',
     roles: ['DevOps Engineer', 'SRE', 'Platform Engineer'],
     techStack: ['Docker', 'Kubernetes', 'Jenkins', 'Terraform', 'Prometheus'],
-    salaryRange: '$85K - $170K',
+    salaryRange: '₹8 LPA – ₹22 LPA',
     topCompanies: ['Google', 'Amazon', 'Netflix', 'Spotify', 'Uber'],
     skills: ['CI/CD', 'Monitoring', 'Automation', 'Cloud', 'Scripting'],
     certifications: ['CKA', 'AWS DevOps Professional', 'HashiCorp Terraform'],
@@ -118,7 +118,7 @@ const domains = [
     description: 'Create seamless mobile experiences for iOS and Android.',
     roles: ['iOS Developer', 'Android Developer', 'React Native Developer'],
     techStack: ['Swift', 'Kotlin', 'React Native', 'Flutter', 'Firebase'],
-    salaryRange: '$75K - $160K',
+    salaryRange: '₹6 LPA – ₹20 LPA',
     topCompanies: ['Apple', 'Google', 'Meta', 'Uber', 'Airbnb'],
     skills: ['UI/UX', 'Native APIs', 'State Management', 'Testing', 'Publishing'],
     certifications: ['Google Android Developer', 'Meta React Native'],
@@ -226,7 +226,7 @@ const DomainsPage = () => {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <div className="flex items-center gap-2 mb-2">
-                            <DollarSign className="w-4 h-4 text-green-500" />
+                            <IndianRupee className="w-4 h-4 text-green-500" />
                             <span className="text-sm font-semibold">Salary Range</span>
                           </div>
                           <span className="text-lg font-bold gradient-text">{domain.salaryRange}</span>

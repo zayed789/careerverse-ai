@@ -67,6 +67,7 @@ const RoadmapGeneratorPage = () => {
 
       if (roadmapData?.roadmap && Array.isArray(roadmapData.roadmap)) {
         setRoadmapPhases(roadmapData.roadmap);
+        localStorage.setItem('careerverse_generated_roadmap', JSON.stringify(roadmapData.roadmap));
       } else {
         throw new Error('Invalid response format');
       }

@@ -6,12 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { WEBHOOK_URLS } from '@/lib/interviewWebhooks';
 
-const screeningQuestions = [
-  'Tell us about yourself and why you are interested in this role.',
-  'Describe a challenging situation at work and how you handled it.',
-  'Where do you see yourself professionally in the next 3 years?',
-];
-
 export interface ScreeningResult {
   passed: boolean;
   score?: number;
@@ -20,10 +14,17 @@ export interface ScreeningResult {
   [key: string]: unknown;
 }
 
+interface ScreeningQuestion {
+  id: number;
+  question: string;
+}
+
 interface ScreeningRoundProps {
   sessionId: string;
   candidateName: string;
   targetRole: string;
+  welcomeMessage: string;
+  questions: ScreeningQuestion[];
   onResult: (result: ScreeningResult) => void;
 }
 
@@ -31,10 +32,12 @@ const ScreeningRound = ({
   sessionId,
   candidateName,
   targetRole,
+  welcomeMessage,
+  questions,
   onResult,
 }: ScreeningRoundProps) => {
   const [answers, setAnswers] = useState<string[]>(
-    screeningQuestions.map(() => '')
+    questions.map(() => '')
   );
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScreeningResult | null>(null);
@@ -52,8 +55,8 @@ const ScreeningRound = ({
       candidate_name: candidateName,
       target_role: targetRole,
       round: 'screening',
-      answers: screeningQuestions.map((q, i) => ({
-        question: q,
+      answers: questions.map((q, i) => ({
+        question: q.question,
         answer: answers[i].trim(),
       })),
     };
@@ -152,6 +155,12 @@ const ScreeningRound = ({
       animate={{ opacity: 1, y: 0 }}
       className="max-w-2xl mx-auto space-y-6"
     >
+      {welcomeMessage && (
+        <div className="rounded-xl border border-primary/20 bg-primary/5 backdrop-blur-xl p-4 text-center">
+          <p className="text-sm text-primary font-medium">{welcomeMessage}</p>
+        </div>
+      )}
+
       <div className="rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl p-6">
         <h2 className="text-xl font-bold text-foreground mb-1">
           Round 1: Screening Interview
@@ -161,10 +170,10 @@ const ScreeningRound = ({
         </p>
 
         <div className="space-y-5">
-          {screeningQuestions.map((q, i) => (
-            <div key={i} className="space-y-2">
+          {questions.map((q, i) => (
+            <div key={q.id} className="space-y-2">
               <Label className="text-sm font-medium text-foreground">
-                {i + 1}. {q}
+                {i + 1}. {q.question}
               </Label>
               <Textarea
                 placeholder="Type your answer here..."

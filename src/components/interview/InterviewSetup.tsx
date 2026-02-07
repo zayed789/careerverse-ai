@@ -1,19 +1,31 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { UserCircle, Briefcase, ArrowRight } from 'lucide-react';
+import { UserCircle, Briefcase, ArrowRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 interface InterviewSetupProps {
-  onStart: (name: string, role: string) => void;
+  onStart: (name: string, role: string) => Promise<void>;
+  error?: string;
 }
 
-const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
+const InterviewSetup = ({ onStart, error }: InterviewSetupProps) => {
   const [name, setName] = useState('');
   const [role, setRole] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const canStart = name.trim().length > 0 && role.trim().length > 0;
+  const canStart = name.trim().length > 0 && role.trim().length > 0 && !loading;
+
+  const handleClick = async () => {
+    if (!canStart) return;
+    setLoading(true);
+    try {
+      await onStart(name.trim(), role.trim());
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <motion.div
@@ -46,6 +58,7 @@ const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
               placeholder="Enter your full name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              disabled={loading}
               className="bg-secondary/30 border-border/50"
             />
           </div>
@@ -60,18 +73,32 @@ const InterviewSetup = ({ onStart }: InterviewSetupProps) => {
               placeholder="e.g. Frontend Developer, Data Analyst"
               value={role}
               onChange={(e) => setRole(e.target.value)}
+              disabled={loading}
               className="bg-secondary/30 border-border/50"
             />
           </div>
 
+          {error && (
+            <p className="text-sm text-red-400">{error}</p>
+          )}
+
           <Button
-            onClick={() => onStart(name.trim(), role.trim())}
+            onClick={handleClick}
             disabled={!canStart}
             className="w-full glow-button text-white border-0 mt-4"
             size="lg"
           >
-            Start Interview
-            <ArrowRight className="w-4 h-4 ml-2" />
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Starting Interview...
+              </>
+            ) : (
+              <>
+                Start Interview
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </>
+            )}
           </Button>
         </div>
       </div>

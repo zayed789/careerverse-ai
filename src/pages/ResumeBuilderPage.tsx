@@ -12,9 +12,9 @@ const ResumeBuilderPage = () => {
   const [resumeData, setResumeData] = useState<ResumeData>(initialResumeData);
 
   const hasName =
-    resumeData.firstName.trim() !== '' || resumeData.lastName.trim() !== '';
-  const hasSkills = resumeData.skillCategories.some((c) => c.skills.length > 0);
-  const hasExperience = resumeData.experiences.length > 0;
+    (resumeData.firstName?.trim() ?? '') !== '' || (resumeData.lastName?.trim() ?? '') !== '';
+  const hasSkills = (resumeData.skillCategories ?? []).some((c) => c.skills.length > 0);
+  const hasExperience = (resumeData.experiences ?? []).length > 0;
   const isFormValid = hasName && (hasSkills || hasExperience);
 
   return (

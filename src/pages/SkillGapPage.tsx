@@ -1,36 +1,60 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, BarChart3, CheckCircle2, XCircle, AlertCircle, Sparkles } from 'lucide-react';
+import { BarChart3, CheckCircle2, XCircle, AlertCircle, Sparkles } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/hooks/use-toast';
 
-const mockResults = {
-  matchScore: 72,
-  matchedSkills: ['React', 'JavaScript', 'TypeScript', 'Git', 'REST APIs'],
-  missingSkills: ['GraphQL', 'AWS', 'Docker', 'Kubernetes'],
-  recommendations: [
-    'Learn GraphQL to improve API skills',
-    'Get AWS Cloud Practitioner certification',
-    'Practice containerization with Docker',
-    'Build projects using microservices architecture',
-  ],
-};
+const SKILL_GAP_WEBHOOK = 'https://figo6788.app.n8n.cloud/webhook-test/skill-gap';
+
+interface SkillGapResult {
+  match_score: number;
+  match_label: string;
+  matched_skills: string[];
+  missing_skills: string[];
+  recommendations: string[];
+}
 
 const SkillGapPage = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [results, setResults] = useState<typeof mockResults | null>(null);
+  const [results, setResults] = useState<SkillGapResult | null>(null);
   const [jobDescription, setJobDescription] = useState('');
-  const [userSkills, setUserSkills] = useState('React, JavaScript, TypeScript, Git, REST APIs, HTML, CSS, Node.js');
+  const [userSkills, setUserSkills] = useState('');
 
   const isFormValid = jobDescription.trim() !== '' && userSkills.trim() !== '';
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
+    if (!isFormValid || isAnalyzing) return;
     setIsAnalyzing(true);
-    setTimeout(() => {
+    setResults(null);
+
+    try {
+      const response = await fetch(SKILL_GAP_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          job_description: jobDescription.trim(),
+          user_skills: userSkills.trim(),
+        }),
+      });
+
+      if (!response.ok) throw new Error(`Analysis failed (${response.status})`);
+
+      const raw = await response.json();
+      const data: SkillGapResult = Array.isArray(raw) ? raw[0] : raw;
+
+      if (!data || typeof data.match_score !== 'number') {
+        throw new Error('Invalid response from analysis');
+      }
+
+      setResults(data);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Analysis failed';
+      toast({ title: 'Skill Gap Analysis Error', description: message, variant: 'destructive' });
+    } finally {
       setIsAnalyzing(false);
-      setResults(mockResults);
-    }, 2500);
+    }
   };
 
   return (
@@ -66,21 +90,15 @@ const SkillGapPage = () => {
               {/* Job Description Input */}
               <div className="glass-card p-6">
                 <h3 className="font-semibold mb-4 flex items-center gap-2">
-                  <Upload className="w-5 h-5 text-primary" />
+                  <BarChart3 className="w-5 h-5 text-primary" />
                   Job Description
                 </h3>
                 <Textarea
-                  placeholder="Paste the job description here, or upload a PDF/DOC file..."
-                  className="bg-secondary/50 min-h-[200px] mb-4"
+                  placeholder="Paste the job description here..."
+                  className="bg-secondary/50 min-h-[280px]"
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
                 />
-                <div className="flex items-center justify-center p-6 border-2 border-dashed border-border/50 rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
-                  <div className="text-center">
-                    <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">Drop PDF/DOC here</p>
-                  </div>
-                </div>
               </div>
 
               {/* Your Skills Input */}
@@ -90,7 +108,7 @@ const SkillGapPage = () => {
                   Your Skills
                 </h3>
                 <Textarea
-                  placeholder="List your skills (one per line or comma-separated)&#10;&#10;Example:&#10;React&#10;JavaScript&#10;TypeScript&#10;Node.js"
+                  placeholder={"List your skills (one per line or comma-separated)\n\nExample:\nReact\nJavaScript\nTypeScript\nNode.js"}
                   className="bg-secondary/50 min-h-[280px]"
                   value={userSkills}
                   onChange={(e) => setUserSkills(e.target.value)}
@@ -131,100 +149,98 @@ const SkillGapPage = () => {
                 <h3 className="text-lg font-semibold mb-4">Skill Match Score</h3>
                 <div className="relative w-40 h-40 mx-auto mb-4">
                   <svg className="w-full h-full transform -rotate-90">
-                    <circle
-                      cx="80"
-                      cy="80"
-                      r="70"
-                      className="fill-none stroke-secondary"
-                      strokeWidth="12"
-                    />
+                    <circle cx="80" cy="80" r="70" className="fill-none stroke-secondary" strokeWidth="12" />
                     <motion.circle
-                      cx="80"
-                      cy="80"
-                      r="70"
+                      cx="80" cy="80" r="70"
                       className="fill-none stroke-primary"
                       strokeWidth="12"
                       strokeLinecap="round"
                       initial={{ strokeDasharray: '0 440' }}
-                      animate={{ strokeDasharray: `${results.matchScore * 4.4} 440` }}
+                      animate={{ strokeDasharray: `${results.match_score * 4.4} 440` }}
                       transition={{ duration: 1.5, ease: 'easeOut' }}
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-4xl font-bold gradient-text">{results.matchScore}%</span>
+                    <span className="text-4xl font-bold gradient-text">{results.match_score}%</span>
                   </div>
                 </div>
                 <p className="text-muted-foreground">
-                  {results.matchScore >= 80 ? 'Excellent match!' : results.matchScore >= 60 ? 'Good match with room to improve' : 'Some skills need development'}
+                  {results.match_label || (results.match_score >= 80 ? 'Excellent match!' : results.match_score >= 60 ? 'Good match with room to improve' : 'Some skills need development')}
                 </p>
               </div>
 
               {/* Skills Analysis */}
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Matched Skills */}
-                <div className="glass-card p-6">
-                  <h3 className="font-semibold mb-4 flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-green-500" />
-                    Matched Skills
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {results.matchedSkills.map((skill) => (
-                      <motion.span
-                        key={skill}
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="px-3 py-1 rounded-full text-sm bg-green-500/20 text-green-400"
-                      >
-                        {skill}
-                      </motion.span>
-                    ))}
+                {results.matched_skills?.length > 0 && (
+                  <div className="glass-card p-6">
+                    <h3 className="font-semibold mb-4 flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                      Matched Skills
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {results.matched_skills.map((skill) => (
+                        <motion.span
+                          key={skill}
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="px-3 py-1 rounded-full text-sm bg-emerald-500/20 text-emerald-400"
+                        >
+                          {skill}
+                        </motion.span>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Missing Skills */}
-                <div className="glass-card p-6">
-                  <h3 className="font-semibold mb-4 flex items-center gap-2">
-                    <XCircle className="w-5 h-5 text-red-400" />
-                    Missing Skills
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {results.missingSkills.map((skill) => (
-                      <motion.span
-                        key={skill}
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="px-3 py-1 rounded-full text-sm bg-red-500/20 text-red-400"
-                      >
-                        {skill}
-                      </motion.span>
-                    ))}
+                {results.missing_skills?.length > 0 && (
+                  <div className="glass-card p-6">
+                    <h3 className="font-semibold mb-4 flex items-center gap-2">
+                      <XCircle className="w-5 h-5 text-red-400" />
+                      Missing Skills
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {results.missing_skills.map((skill) => (
+                        <motion.span
+                          key={skill}
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="px-3 py-1 rounded-full text-sm bg-red-500/20 text-red-400"
+                        >
+                          {skill}
+                        </motion.span>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Recommendations */}
-              <div className="glass-card p-6">
-                <h3 className="font-semibold mb-4 flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5 text-amber-400" />
-                  Recommendations
-                </h3>
-                <ul className="space-y-3">
-                  {results.recommendations.map((rec, index) => (
-                    <motion.li
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="flex items-start gap-3 p-3 bg-secondary/30 rounded-lg"
-                    >
-                      <span className="w-6 h-6 rounded-full bg-primary/20 text-primary text-sm flex items-center justify-center shrink-0">
-                        {index + 1}
-                      </span>
-                      <span>{rec}</span>
-                    </motion.li>
-                  ))}
-                </ul>
-              </div>
+              {results.recommendations?.length > 0 && (
+                <div className="glass-card p-6">
+                  <h3 className="font-semibold mb-4 flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 text-amber-400" />
+                    Recommendations
+                  </h3>
+                  <ul className="space-y-3">
+                    {results.recommendations.map((rec, index) => (
+                      <motion.li
+                        key={index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex items-start gap-3 p-3 bg-secondary/30 rounded-lg"
+                      >
+                        <span className="w-6 h-6 rounded-full bg-primary/20 text-primary text-sm flex items-center justify-center shrink-0">
+                          {index + 1}
+                        </span>
+                        <span>{rec}</span>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <Button onClick={() => setResults(null)} variant="outline" className="w-full">
                 Analyze Another Job

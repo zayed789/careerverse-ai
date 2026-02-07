@@ -9,22 +9,57 @@ import ScenarioRound from '@/components/interview/ScenarioRound';
 import FinalDecision from '@/components/interview/FinalDecision';
 import { Button } from '@/components/ui/button';
 import { RotateCcw } from 'lucide-react';
+import { WEBHOOK_URLS } from '@/lib/interviewWebhooks';
 
 type RoundKey = 'setup' | 'screening' | 'technical' | 'scenario' | 'final';
 
+interface ScreeningQuestion {
+  id: number;
+  question: string;
+}
+
 const InterviewPage = () => {
   const [currentRound, setCurrentRound] = useState<RoundKey>('setup');
-  const [sessionId] = useState(() => crypto.randomUUID());
+  const [sessionId, setSessionId] = useState('');
   const [candidateName, setCandidateName] = useState('');
   const [targetRole, setTargetRole] = useState('');
   const [roundResults, setRoundResults] = useState<Record<string, { passed?: boolean }>>({});
   const [finalData, setFinalData] = useState<Record<string, unknown> | null>(null);
   const [interviewEnded, setInterviewEnded] = useState(false);
 
-  const handleStart = (name: string, role: string) => {
+  // Dynamic screening data from the start webhook
+  const [welcomeMessage, setWelcomeMessage] = useState('');
+  const [screeningQuestions, setScreeningQuestions] = useState<ScreeningQuestion[]>([]);
+  const [startError, setStartError] = useState('');
+
+  const handleStart = async (name: string, role: string) => {
     setCandidateName(name);
     setTargetRole(role);
-    setCurrentRound('screening');
+    setStartError('');
+
+    const payload = {
+      candidate_name: name,
+      target_role: role,
+      round: 'screening',
+    };
+
+    try {
+      const res = await fetch(WEBHOOK_URLS.start, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('Failed to start interview');
+      const raw = await res.json();
+      const data = Array.isArray(raw) ? raw[0] : raw;
+
+      setSessionId(data.session_id || '');
+      setWelcomeMessage(data.welcome_message || '');
+      setScreeningQuestions(data.questions || []);
+      setCurrentRound('screening');
+    } catch {
+      setStartError('Something went wrong starting the interview. Please try again.');
+    }
   };
 
   const handleScreeningResult = (result: { passed: boolean; [k: string]: unknown }) => {
@@ -53,11 +88,15 @@ const InterviewPage = () => {
 
   const handleRestart = () => {
     setCurrentRound('setup');
+    setSessionId('');
     setCandidateName('');
     setTargetRole('');
     setRoundResults({});
     setFinalData(null);
     setInterviewEnded(false);
+    setWelcomeMessage('');
+    setScreeningQuestions([]);
+    setStartError('');
   };
 
   const stepRound = currentRound === 'setup' ? 'screening' : currentRound;
@@ -88,7 +127,7 @@ const InterviewPage = () => {
         <AnimatePresence mode="wait">
           {currentRound === 'setup' && (
             <motion.div key="setup" exit={{ opacity: 0, y: -20 }}>
-              <InterviewSetup onStart={handleStart} />
+              <InterviewSetup onStart={handleStart} error={startError} />
             </motion.div>
           )}
 
@@ -98,6 +137,8 @@ const InterviewPage = () => {
                 sessionId={sessionId}
                 candidateName={candidateName}
                 targetRole={targetRole}
+                welcomeMessage={welcomeMessage}
+                questions={screeningQuestions}
                 onResult={handleScreeningResult}
               />
             </motion.div>

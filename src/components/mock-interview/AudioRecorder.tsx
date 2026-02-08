@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mic, Square } from 'lucide-react';
+import { Mic, Square, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -8,6 +8,7 @@ type RecordingStatus = 'ready' | 'recording' | 'completed';
 
 interface AudioRecorderProps {
   onRecordingComplete: () => void;
+  isEvaluating: boolean;
 }
 
 const statusConfig: Record<RecordingStatus, { text: string; color: string }> = {
@@ -16,7 +17,7 @@ const statusConfig: Record<RecordingStatus, { text: string; color: string }> = {
   completed: { text: 'Recording completed', color: 'text-accent' },
 };
 
-const AudioRecorder = ({ onRecordingComplete }: AudioRecorderProps) => {
+const AudioRecorder = ({ onRecordingComplete, isEvaluating }: AudioRecorderProps) => {
   const [status, setStatus] = useState<RecordingStatus>('ready');
 
   const handleStart = () => {
@@ -46,26 +47,32 @@ const AudioRecorder = ({ onRecordingComplete }: AudioRecorderProps) => {
           <div
             className={cn(
               'w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300',
-              status === 'recording'
+              isEvaluating
+                ? 'bg-muted/50'
+                : status === 'recording'
                 ? 'bg-primary/20'
                 : status === 'completed'
                 ? 'bg-accent/20'
                 : 'bg-muted/50'
             )}
           >
-            <Mic
-              className={cn(
-                'w-10 h-10 transition-colors duration-300',
-                status === 'recording'
-                  ? 'text-primary'
-                  : status === 'completed'
-                  ? 'text-accent'
-                  : 'text-muted-foreground'
-              )}
-            />
+            {isEvaluating ? (
+              <Loader2 className="w-10 h-10 text-muted-foreground animate-spin" />
+            ) : (
+              <Mic
+                className={cn(
+                  'w-10 h-10 transition-colors duration-300',
+                  status === 'recording'
+                    ? 'text-primary'
+                    : status === 'completed'
+                    ? 'text-accent'
+                    : 'text-muted-foreground'
+                )}
+              />
+            )}
           </div>
           {/* Pulse rings when recording */}
-          {status === 'recording' && (
+          {status === 'recording' && !isEvaluating && (
             <>
               <span className="absolute inset-0 rounded-full border-2 border-primary/40 animate-ping" />
               <span
@@ -77,15 +84,20 @@ const AudioRecorder = ({ onRecordingComplete }: AudioRecorderProps) => {
         </div>
 
         {/* Status text */}
-        <p className={cn('text-sm font-medium transition-colors duration-300', statusConfig[status].color)}>
-          {statusConfig[status].text}
+        <p
+          className={cn(
+            'text-sm font-medium transition-colors duration-300',
+            isEvaluating ? 'text-muted-foreground' : statusConfig[status].color
+          )}
+        >
+          {isEvaluating ? 'Evaluating your response…' : statusConfig[status].text}
         </p>
 
         {/* Controls */}
         <div className="flex items-center gap-4">
           <Button
             onClick={handleStart}
-            disabled={status === 'recording'}
+            disabled={status === 'recording' || isEvaluating}
             className="gap-2"
           >
             <Mic className="w-4 h-4" />
@@ -93,7 +105,7 @@ const AudioRecorder = ({ onRecordingComplete }: AudioRecorderProps) => {
           </Button>
           <Button
             onClick={handleStop}
-            disabled={status !== 'recording'}
+            disabled={status !== 'recording' || isEvaluating}
             variant="destructive"
             className="gap-2"
           >

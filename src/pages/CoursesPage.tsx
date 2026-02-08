@@ -15,7 +15,7 @@ interface Course {
   url: string;
 }
 
-const WEBHOOK_URL = 'https://figo6788.app.n8n.cloud/webhook-test/courses';
+const WEBHOOK_URL = 'https://figo6788.app.n8n.cloud/webhook/courses';
 
 const getLevelColor = (level: string) => {
   switch (level) {

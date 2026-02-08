@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 
-const SKILL_GAP_WEBHOOK = 'https://figo6788.app.n8n.cloud/webhook-test/skill-gap';
+const SKILL_GAP_WEBHOOK = 'https://figo6788.app.n8n.cloud/webhook/skill-gap';
 
 interface SkillGapResult {
   match_score: number;

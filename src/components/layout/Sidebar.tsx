@@ -15,7 +15,6 @@ import {
   ChevronRight,
   Compass,
   Zap,
-  Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -28,7 +27,7 @@ const navItems = [
   { path: '/resume-builder', icon: FileText, label: 'Resume Builder' },
   { path: '/skill-gap', icon: BarChart3, label: 'Skill Gap Analyzer' },
   { path: '/trends', icon: TrendingUp, label: 'Trend Analyzer' },
-  { path: '/interview', icon: Users, label: 'Interview' },
+  
   { path: '/planner', icon: Calendar, label: 'Planner' },
   { path: '/help', icon: HelpCircle, label: 'Help' },
 ];

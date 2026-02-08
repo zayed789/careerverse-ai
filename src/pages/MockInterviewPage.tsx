@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mic, Send } from 'lucide-react';
+import { Mic, Send, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -10,14 +10,33 @@ import QuestionCard from '@/components/mock-interview/QuestionCard';
 import AudioRecorder from '@/components/mock-interview/AudioRecorder';
 import CameraPreview from '@/components/mock-interview/CameraPreview';
 import InterviewContextCard from '@/components/mock-interview/InterviewContextCard';
+import RoundIndicator from '@/components/mock-interview/RoundIndicator';
+import type { InterviewRound, InterviewQuestion } from '@/components/mock-interview/types';
+
+const INITIAL_QUESTION: InterviewQuestion = {
+  id: 'screening-q1',
+  text: 'Tell me about yourself and why you\'re interested in this role.',
+};
 
 const MockInterviewPage = () => {
   const [started, setStarted] = useState(false);
   const [candidateName, setCandidateName] = useState('');
   const [targetRole, setTargetRole] = useState('');
   const [hasRecorded, setHasRecorded] = useState(false);
+  const [isEvaluating, setIsEvaluating] = useState(false);
+
+  // Interview progress state
+  const [currentRound] = useState<InterviewRound>('screening');
+  const [currentQuestion] = useState<InterviewQuestion>(INITIAL_QUESTION);
+  const [currentQuestionIndex] = useState(1);
+  const [totalQuestionsInRound] = useState(5);
 
   const canBegin = candidateName.trim().length > 0 && targetRole.trim().length > 0;
+
+  const handleSubmit = () => {
+    setIsEvaluating(true);
+    // Placeholder — later replaced by webhook call
+  };
 
   return (
     <Layout>
@@ -94,27 +113,49 @@ const MockInterviewPage = () => {
               </div>
 
               {/* Personalized greeting */}
-              <div className="mb-6 glass-card border-border/30 p-4 rounded-xl">
+              <div className="mb-4 glass-card border-border/30 p-4 rounded-xl">
                 <p className="text-lg font-medium text-foreground">
                   Hi {candidateName.trim()}, welcome to your mock interview 👋
                 </p>
+              </div>
+
+              {/* Round indicator */}
+              <div className="mb-6 glass-card border-border/30 p-3 rounded-xl">
+                <RoundIndicator currentRound={currentRound} />
               </div>
 
               {/* Two-column layout */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Left panel — Interview flow */}
                 <div className="lg:col-span-2 space-y-6">
-                  <QuestionCard />
-                  <AudioRecorder onRecordingComplete={() => setHasRecorded(true)} />
+                  <QuestionCard
+                    question={currentQuestion}
+                    currentIndex={currentQuestionIndex}
+                    totalQuestions={totalQuestionsInRound}
+                  />
+                  <AudioRecorder
+                    onRecordingComplete={() => setHasRecorded(true)}
+                    isEvaluating={isEvaluating}
+                  />
 
                   {/* Submit button */}
                   <Button
-                    disabled={!hasRecorded}
+                    disabled={!hasRecorded || isEvaluating}
                     className="w-full gap-2 h-12 text-base"
                     size="lg"
+                    onClick={handleSubmit}
                   >
-                    <Send className="w-4 h-4" />
-                    Submit Audio Answer
+                    {isEvaluating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Evaluating…
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        Submit Audio Answer
+                      </>
+                    )}
                   </Button>
                 </div>
 

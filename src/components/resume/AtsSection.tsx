@@ -4,7 +4,7 @@ import { Upload, FileText, CheckCircle2, AlertTriangle, Lightbulb, XCircle, X, L
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 
-const ATS_WEBHOOK_URL = 'https://figo6788.app.n8n.cloud/webhook-test/resume-ats';
+const ATS_WEBHOOK_URL = 'https://figo6788.app.n8n.cloud/webhook/resume-ats';
 
 interface AtsWebhookResponse {
   ats_score: number;

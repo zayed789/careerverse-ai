@@ -45,7 +45,7 @@ const MockInterviewPage = () => {
     const newSessionId = generateSessionId();
 
     try {
-      const response = await fetch('https://figo6788.app.n8n.cloud/webhook-test/screening', {
+      const response = await fetch('https://figo6788.app.n8n.cloud/webhook/screening', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

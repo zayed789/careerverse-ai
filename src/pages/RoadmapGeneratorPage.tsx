@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
-const ROADMAP_WEBHOOK_URL = 'https://figo6788.app.n8n.cloud/webhook-test/roadmap-generator';
+const ROADMAP_WEBHOOK_URL = 'https://figo6788.app.n8n.cloud/webhook/roadmap-generator';
 
 interface RoadmapPhase {
   phase: string;

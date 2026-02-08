@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
 import QuestionCard from '@/components/mock-interview/QuestionCard';
 import AudioRecorder from '@/components/mock-interview/AudioRecorder';
 import CameraPreview from '@/components/mock-interview/CameraPreview';
@@ -13,25 +14,94 @@ import InterviewContextCard from '@/components/mock-interview/InterviewContextCa
 import RoundIndicator from '@/components/mock-interview/RoundIndicator';
 import type { InterviewRound, InterviewQuestion } from '@/components/mock-interview/types';
 
-const INITIAL_QUESTION: InterviewQuestion = {
-  id: 'screening-q1',
-  text: 'Tell me about yourself and why you\'re interested in this role.',
-};
+function generateSessionId(): string {
+  return `session-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
 
 const MockInterviewPage = () => {
+  const { toast } = useToast();
   const [started, setStarted] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
   const [candidateName, setCandidateName] = useState('');
   const [targetRole, setTargetRole] = useState('');
   const [hasRecorded, setHasRecorded] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
 
-  // Interview progress state
-  const [currentRound] = useState<InterviewRound>('screening');
-  const [currentQuestion] = useState<InterviewQuestion>(INITIAL_QUESTION);
-  const [currentQuestionIndex] = useState(1);
-  const [totalQuestionsInRound] = useState(5);
+  // Session & interview progress state
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [currentRound, setCurrentRound] = useState<InterviewRound>('screening');
+  const [currentQuestion, setCurrentQuestion] = useState<InterviewQuestion | null>(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(1);
+  const [totalQuestionsInRound, setTotalQuestionsInRound] = useState(5);
 
   const canBegin = candidateName.trim().length > 0 && targetRole.trim().length > 0;
+
+  const handleBeginInterview = async () => {
+    if (!canBegin || isStarting) return;
+
+    setIsStarting(true);
+    const newSessionId = generateSessionId();
+
+    try {
+      const response = await fetch('https://figo6788.app.n8n.cloud/webhook-test/screening', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: newSessionId,
+          candidate_name: candidateName.trim(),
+          target_role: targetRole.trim(),
+          round: 'screening',
+          step: 'start',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Webhook returned ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Unwrap n8n array wrapper if present
+      const payload = Array.isArray(data) ? data[0] : data;
+
+      // Store session
+      setSessionId(newSessionId);
+
+      // Extract question
+      const questionText =
+        payload?.current_question?.question ||
+        payload?.current_question?.text ||
+        payload?.question ||
+        'Tell me about yourself and why you\'re interested in this role.';
+
+      setCurrentQuestion({
+        id: `${payload?.current_round || 'screening'}-q1`,
+        text: questionText,
+      });
+
+      // Extract round
+      if (payload?.current_round) {
+        setCurrentRound(payload.current_round as InterviewRound);
+      }
+
+      // Extract remaining questions count
+      if (payload?.remaining_questions !== undefined) {
+        const remaining = Number(payload.remaining_questions);
+        setTotalQuestionsInRound(remaining + 1);
+      }
+
+      setStarted(true);
+    } catch (error) {
+      console.error('Screening webhook error:', error);
+      toast({
+        title: 'Unable to start interview',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsStarting(false);
+    }
+  };
 
   const handleSubmit = () => {
     setIsEvaluating(true);
@@ -84,10 +154,17 @@ const MockInterviewPage = () => {
                   </div>
                   <Button
                     className="w-full h-11 text-base"
-                    disabled={!canBegin}
-                    onClick={() => setStarted(true)}
+                    disabled={!canBegin || isStarting}
+                    onClick={handleBeginInterview}
                   >
-                    Begin Interview
+                    {isStarting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        Starting…
+                      </>
+                    ) : (
+                      'Begin Interview'
+                    )}
                   </Button>
                 </CardContent>
               </Card>

@@ -9,16 +9,24 @@ interface QuestionCardProps {
   totalQuestions: number;
 }
 
-/** Pick the most natural-sounding voice available in the browser. */
-function pickBestVoice(): SpeechSynthesisVoice | null {
+/** Pick the best female voice available in the browser. */
+function pickFemaleVoice(): SpeechSynthesisVoice | null {
   const voices = speechSynthesis.getVoices();
   if (voices.length === 0) return null;
 
-  // Preferred voice name fragments (natural / premium voices)
+  // Preferred female voice name fragments, ordered by quality
   const preferred = [
-    'samantha', 'karen', 'daniel', 'google uk', 'google us',
-    'microsoft zira', 'microsoft david', 'microsoft mark',
-    'microsoft aria', 'microsoft jenny',
+    'samantha',
+    'microsoft zira',
+    'microsoft aria',
+    'microsoft jenny',
+    'google uk english female',
+    'google us english female',
+    'karen',
+    'fiona',
+    'moira',
+    'tessa',
+    'veena',
   ];
 
   for (const pref of preferred) {
@@ -26,10 +34,14 @@ function pickBestVoice(): SpeechSynthesisVoice | null {
     if (match) return match;
   }
 
-  // Fallback: first English voice, or the browser default
-  return (
-    voices.find((v) => v.lang.startsWith('en')) || voices[0]
+  // Fallback: any English female-sounding voice, then first English voice
+  const englishVoices = voices.filter((v) => v.lang.startsWith('en'));
+  const femaleGuess = englishVoices.find(
+    (v) =>
+      /female|woman/i.test(v.name) ||
+      /samantha|zira|aria|jenny|karen|fiona|moira|tessa|veena|victoria|allison/i.test(v.name)
   );
+  return femaleGuess || englishVoices[0] || voices[0];
 }
 
 const QuestionCard = ({ question, currentIndex = 1, totalQuestions = 5 }: QuestionCardProps) => {
@@ -38,25 +50,21 @@ const QuestionCard = ({ question, currentIndex = 1, totalQuestions = 5 }: Questi
   useEffect(() => {
     if (!question || spokenIdRef.current === question.id) return;
 
-    // Mark as spoken immediately to avoid repeats
     spokenIdRef.current = question.id;
-
-    // Cancel any in-progress speech
     speechSynthesis.cancel();
 
     const speak = () => {
       const utterance = new SpeechSynthesisUtterance(question.text);
-      utterance.rate = 0.9;
+      utterance.rate = 1.0;
       utterance.pitch = 1;
       utterance.volume = 1;
 
-      const voice = pickBestVoice();
+      const voice = pickFemaleVoice();
       if (voice) utterance.voice = voice;
 
       speechSynthesis.speak(utterance);
     };
 
-    // Voices may load asynchronously (Chrome)
     if (speechSynthesis.getVoices().length > 0) {
       speak();
     } else {

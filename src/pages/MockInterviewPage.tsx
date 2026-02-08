@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mic, Send, Loader2 } from 'lucide-react';
+import { Mic, Send, Loader2, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,10 @@ const MockInterviewPage = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [currentRound, setCurrentRound] = useState<InterviewRound>('screening');
   const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+
+  const currentQuestion = questions.length > 0 ? questions[currentQuestionIndex] : null;
+  const isLastQuestion = currentQuestionIndex >= questions.length - 1;
 
   const canBegin = candidateName.trim().length > 0 && targetRole.trim().length > 0;
 
@@ -195,7 +199,7 @@ const MockInterviewPage = () => {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Left panel — Interview flow */}
                 <div className="lg:col-span-2 space-y-6">
-                  {questions.length === 0 ? (
+                  {!currentQuestion ? (
                     <Card className="glass-card border-border/30 p-6">
                       <div className="flex items-center gap-3 text-muted-foreground">
                         <Loader2 className="w-5 h-5 animate-spin" />
@@ -203,14 +207,22 @@ const MockInterviewPage = () => {
                       </div>
                     </Card>
                   ) : (
-                    questions.map((q, idx) => (
+                    <>
                       <QuestionCard
-                        key={q.id}
-                        question={q}
-                        currentIndex={idx + 1}
+                        question={currentQuestion}
+                        currentIndex={currentQuestionIndex + 1}
                         totalQuestions={questions.length}
                       />
-                    ))
+                      <Button
+                        variant="outline"
+                        className="w-full gap-2 h-11"
+                        disabled={isLastQuestion}
+                        onClick={() => setCurrentQuestionIndex((i) => i + 1)}
+                      >
+                        Next Question
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </>
                   )}
                   <AudioRecorder
                     onRecordingComplete={() => setHasRecorded(true)}

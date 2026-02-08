@@ -30,9 +30,7 @@ const MockInterviewPage = () => {
   // Session & interview progress state
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [currentRound, setCurrentRound] = useState<InterviewRound>('screening');
-  const [currentQuestion, setCurrentQuestion] = useState<InterviewQuestion | null>(null);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(1);
-  const [totalQuestionsInRound, setTotalQuestionsInRound] = useState(5);
+  const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
 
   const canBegin = candidateName.trim().length > 0 && targetRole.trim().length > 0;
 
@@ -67,27 +65,19 @@ const MockInterviewPage = () => {
       // Store session
       setSessionId(newSessionId);
 
-      // Extract question
-      const questionText =
-        payload?.current_question?.question ||
-        payload?.current_question?.text ||
-        payload?.question ||
-        'Tell me about yourself and why you\'re interested in this role.';
-
-      setCurrentQuestion({
-        id: `${payload?.current_round || 'screening'}-q1`,
-        text: questionText,
-      });
+      // Extract questions array from response
+      const rawQuestions: any[] = payload?.questions || [];
+      const mappedQuestions: InterviewQuestion[] = rawQuestions.map(
+        (q: any, i: number) => ({
+          id: `${payload?.current_round || 'screening'}-q${i + 1}`,
+          text: q?.question || q?.text || q,
+        })
+      );
+      setQuestions(mappedQuestions);
 
       // Extract round
       if (payload?.current_round) {
         setCurrentRound(payload.current_round as InterviewRound);
-      }
-
-      // Extract remaining questions count
-      if (payload?.remaining_questions !== undefined) {
-        const remaining = Number(payload.remaining_questions);
-        setTotalQuestionsInRound(remaining + 1);
       }
 
       setStarted(true);
@@ -205,11 +195,23 @@ const MockInterviewPage = () => {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Left panel — Interview flow */}
                 <div className="lg:col-span-2 space-y-6">
-                  <QuestionCard
-                    question={currentQuestion}
-                    currentIndex={currentQuestionIndex}
-                    totalQuestions={totalQuestionsInRound}
-                  />
+                  {questions.length === 0 ? (
+                    <Card className="glass-card border-border/30 p-6">
+                      <div className="flex items-center gap-3 text-muted-foreground">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>Loading questions…</span>
+                      </div>
+                    </Card>
+                  ) : (
+                    questions.map((q, idx) => (
+                      <QuestionCard
+                        key={q.id}
+                        question={q}
+                        currentIndex={idx + 1}
+                        totalQuestions={questions.length}
+                      />
+                    ))
+                  )}
                   <AudioRecorder
                     onRecordingComplete={() => setHasRecorded(true)}
                     isEvaluating={isEvaluating}

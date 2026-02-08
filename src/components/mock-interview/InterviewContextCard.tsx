@@ -1,15 +1,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Info } from 'lucide-react';
 
-const contextFields = [
-  { label: 'Candidate Name', value: 'Placeholder' },
-  { label: 'Target Role', value: 'Placeholder' },
-  { label: 'Interview Type', value: 'Mock' },
-  { label: 'Input Mode', value: 'Audio Only' },
-  { label: 'Status', value: 'In Progress' },
-];
+interface InterviewContextCardProps {
+  candidateName: string;
+  targetRole: string;
+}
 
-const InterviewContextCard = () => {
+const InterviewContextCard = ({ candidateName, targetRole }: InterviewContextCardProps) => {
+  const contextFields = [
+    { label: 'Candidate Name', value: candidateName },
+    { label: 'Target Role', value: targetRole },
+    { label: 'Interview Type', value: 'Mock' },
+    { label: 'Input Mode', value: 'Audio Only' },
+    { label: 'Status', value: 'In Progress' },
+  ];
+
   return (
     <Card className="glass-card border-border/30">
       <CardHeader className="pb-3">

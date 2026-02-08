@@ -8,7 +8,9 @@ interface QuestionCardProps {
   totalQuestions: number;
 }
 
-const QuestionCard = ({ question, currentIndex, totalQuestions }: QuestionCardProps) => {
+const QuestionCard = ({ question, currentIndex = 1, totalQuestions = 5 }: QuestionCardProps) => {
+  if (!question) return null;
+
   return (
     <Card className="glass-card border-border/30">
       <CardHeader className="pb-3">

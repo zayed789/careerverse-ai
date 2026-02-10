@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Mic, Send, Loader2, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '@/components/layout/Layout';
@@ -14,6 +14,8 @@ import InterviewContextCard from '@/components/mock-interview/InterviewContextCa
 import RoundIndicator from '@/components/mock-interview/RoundIndicator';
 import type { InterviewRound, InterviewQuestion } from '@/components/mock-interview/types';
 
+const AUDIO_WEBHOOK_URL = 'https://figo6788.app.n8n.cloud/webhook-test/audio-to-text';
+
 function generateSessionId(): string {
   return `session-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
@@ -24,8 +26,11 @@ const MockInterviewPage = () => {
   const [isStarting, setIsStarting] = useState(false);
   const [candidateName, setCandidateName] = useState('');
   const [targetRole, setTargetRole] = useState('');
-  const [hasRecorded, setHasRecorded] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
+
+  // Audio blob from recorder
+  const audioBlobRef = useRef<Blob | null>(null);
+  const [hasRecorded, setHasRecorded] = useState(false);
 
   // Session & interview progress state
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -33,8 +38,12 @@ const MockInterviewPage = () => {
   const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
+  // Transcripts mapped by question id
+  const [transcripts, setTranscripts] = useState<Record<string, string>>({});
+
   const currentQuestion = questions.length > 0 ? questions[currentQuestionIndex] : null;
   const isLastQuestion = currentQuestionIndex >= questions.length - 1;
+  const currentTranscript = currentQuestion ? transcripts[currentQuestion.id] : undefined;
 
   const canBegin = candidateName.trim().length > 0 && targetRole.trim().length > 0;
 
@@ -62,24 +71,19 @@ const MockInterviewPage = () => {
       }
 
       const data = await response.json();
-
-      // Unwrap n8n array wrapper if present
       const payload = Array.isArray(data) ? data[0] : data;
 
-      // Store session
       setSessionId(newSessionId);
 
-      // Extract questions array from response
       const rawQuestions: any[] = payload?.questions || [];
       const mappedQuestions: InterviewQuestion[] = rawQuestions.map(
         (q: any, i: number) => ({
-          id: `${payload?.current_round || 'screening'}-q${i + 1}`,
+          id: q?.id || `${payload?.current_round || 'screening'}-q${i + 1}`,
           text: q?.question || q?.text || q,
         })
       );
       setQuestions(mappedQuestions);
 
-      // Extract round
       if (payload?.current_round) {
         setCurrentRound(payload.current_round as InterviewRound);
       }
@@ -97,10 +101,61 @@ const MockInterviewPage = () => {
     }
   };
 
-  const handleSubmit = () => {
-    setIsEvaluating(true);
-    // Placeholder — later replaced by webhook call
+  const handleRecordingComplete = (blob: Blob) => {
+    audioBlobRef.current = blob;
+    setHasRecorded(true);
   };
+
+  const handleSubmit = async () => {
+    if (!audioBlobRef.current || !currentQuestion || !sessionId) return;
+
+    setIsEvaluating(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('audio', audioBlobRef.current, 'recording.webm');
+      formData.append('session_id', sessionId);
+      formData.append('candidate_name', candidateName.trim());
+      formData.append('target_role', targetRole.trim());
+      formData.append('round', 'screening');
+      formData.append('question_id', currentQuestion.id);
+      formData.append('question_text', currentQuestion.text);
+
+      const response = await fetch(AUDIO_WEBHOOK_URL, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Webhook returned ${response.status}`);
+      }
+
+      const data = await response.json();
+      const payload = Array.isArray(data) ? data[0] : data;
+      const transcript = payload?.transcript || '';
+
+      setTranscripts((prev) => ({ ...prev, [currentQuestion.id]: transcript }));
+    } catch (error) {
+      console.error('Audio webhook error:', error);
+      toast({
+        title: 'Submission failed',
+        description: 'Could not process your audio. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsEvaluating(false);
+    }
+  };
+
+  const handleNextQuestion = () => {
+    setCurrentQuestionIndex((i) => i + 1);
+    // Reset recording state for next question
+    setHasRecorded(false);
+    audioBlobRef.current = null;
+  };
+
+  // Key for remounting AudioRecorder on question change
+  const recorderKey = currentQuestion?.id || 'no-question';
 
   return (
     <Layout>
@@ -213,19 +268,34 @@ const MockInterviewPage = () => {
                         currentIndex={currentQuestionIndex + 1}
                         totalQuestions={questions.length}
                       />
+
+                      {/* Transcript display */}
+                      {currentTranscript && (
+                        <div className="glass-card border-border/30 p-4 rounded-xl">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                            Your Response (Transcript)
+                          </p>
+                          <p className="text-sm text-foreground/80 leading-relaxed">
+                            {currentTranscript}
+                          </p>
+                        </div>
+                      )}
+
                       <Button
                         variant="outline"
                         className="w-full gap-2 h-11"
-                        disabled={isLastQuestion}
-                        onClick={() => setCurrentQuestionIndex((i) => i + 1)}
+                        disabled={isLastQuestion || isEvaluating}
+                        onClick={handleNextQuestion}
                       >
                         Next Question
                         <ChevronRight className="w-4 h-4" />
                       </Button>
                     </>
                   )}
+
                   <AudioRecorder
-                    onRecordingComplete={() => setHasRecorded(true)}
+                    key={recorderKey}
+                    onRecordingComplete={handleRecordingComplete}
                     isEvaluating={isEvaluating}
                   />
 

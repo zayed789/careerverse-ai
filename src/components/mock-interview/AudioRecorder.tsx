@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Mic, Square, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 type RecordingStatus = 'ready' | 'recording' | 'completed';
 
 interface AudioRecorderProps {
-  onRecordingComplete: () => void;
+  onRecordingComplete: (audioBlob: Blob) => void;
   isEvaluating: boolean;
 }
 
@@ -19,15 +19,46 @@ const statusConfig: Record<RecordingStatus, { text: string; color: string }> = {
 
 const AudioRecorder = ({ onRecordingComplete, isEvaluating }: AudioRecorderProps) => {
   const [status, setStatus] = useState<RecordingStatus>('ready');
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
 
-  const handleStart = () => {
-    setStatus('recording');
-  };
+  const handleStart = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      chunksRef.current = [];
 
-  const handleStop = () => {
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        stream.getTracks().forEach((t) => t.stop());
+        onRecordingComplete(blob);
+      };
+
+      mediaRecorder.start();
+      setStatus('recording');
+    } catch {
+      console.error('Microphone access denied');
+    }
+  }, [onRecordingComplete]);
+
+  const handleStop = useCallback(() => {
+    mediaRecorderRef.current?.stop();
     setStatus('completed');
-    onRecordingComplete();
-  };
+  }, []);
+
+  const reset = useCallback(() => {
+    setStatus('ready');
+    chunksRef.current = [];
+    mediaRecorderRef.current = null;
+  }, []);
+
+  // Expose reset via a stable ref pattern — parent calls it indirectly through key remount
+  // (kept simple: parent remounts by changing key on question advance)
 
   return (
     <Card className="glass-card border-border/30">

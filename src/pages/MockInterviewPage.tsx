@@ -44,12 +44,11 @@ const MockInterviewPage = () => {
   const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
-  // Transcripts mapped by question id
-  const [transcripts, setTranscripts] = useState<Record<string, string>>({});
+  // Track which questions have been submitted
+  const [submittedQuestions, setSubmittedQuestions] = useState<Set<string>>(new Set());
 
   const currentQuestion = questions.length > 0 ? questions[currentQuestionIndex] : null;
   const isLastQuestion = currentQuestionIndex >= questions.length - 1;
-  const currentTranscript = currentQuestion ? transcripts[currentQuestion.id] : undefined;
 
   const canBegin = candidateName.trim().length > 0 && targetRole.trim().length > 0;
 
@@ -136,11 +135,7 @@ const MockInterviewPage = () => {
         throw new Error(`Webhook returned ${response.status}`);
       }
 
-      const data = await response.json();
-      const payload = Array.isArray(data) ? data[0] : data;
-      const transcript = payload?.transcript || '';
-
-      setTranscripts((prev) => ({ ...prev, [currentQuestion.id]: transcript }));
+      setSubmittedQuestions((prev) => new Set(prev).add(currentQuestion.id));
     } catch (error) {
       console.error('Audio webhook error:', error);
       toast({
@@ -192,8 +187,7 @@ const MockInterviewPage = () => {
         setCurrentRound('technical');
         setCurrentQuestionIndex(0);
         setQuestions([]);
-        setTranscripts({});
-        setHasRecorded(false);
+        setSubmittedQuestions(new Set());
         audioBlobRef.current = null;
       }
     } catch (error) {
@@ -208,9 +202,9 @@ const MockInterviewPage = () => {
     }
   };
 
-  // Derived: show screening submit button on last question after transcript received
+  // Derived: show screening submit button on last question after audio submitted
   const showScreeningSubmit =
-    isLastQuestion && currentQuestion && !!transcripts[currentQuestion.id];
+    isLastQuestion && currentQuestion && submittedQuestions.has(currentQuestion.id);
 
   // Key for remounting AudioRecorder on question change
   const recorderKey = currentQuestion?.id || 'no-question';
@@ -327,17 +321,8 @@ const MockInterviewPage = () => {
                         totalQuestions={questions.length}
                       />
 
-                      {/* Transcript display */}
-                      {currentTranscript && (
-                        <div className="glass-card border-border/30 p-4 rounded-xl">
-                          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                            Your Response (Transcript)
-                          </p>
-                          <p className="text-sm text-foreground/80 leading-relaxed">
-                            {currentTranscript}
-                          </p>
-                        </div>
-                      )}
+
+
 
                       <Button
                         variant="outline"

@@ -14,7 +14,7 @@ import InterviewContextCard from '@/components/mock-interview/InterviewContextCa
 import RoundIndicator from '@/components/mock-interview/RoundIndicator';
 import type { InterviewRound, InterviewQuestion } from '@/components/mock-interview/types';
 
-const AUDIO_WEBHOOK_URL = 'https://figo6788.app.n8n.cloud/webhook-test/audio-to-text';
+const AUDIO_WEBHOOK_URL = 'https://figo6788.app.n8n.cloud/webhook/audio-to-text';
 
 function generateSessionId(): string {
   return `session-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;

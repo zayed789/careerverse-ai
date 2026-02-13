@@ -12,7 +12,8 @@ import AudioRecorder from '@/components/mock-interview/AudioRecorder';
 import CameraPreview from '@/components/mock-interview/CameraPreview';
 import InterviewContextCard from '@/components/mock-interview/InterviewContextCard';
 import RoundIndicator from '@/components/mock-interview/RoundIndicator';
-import ScreeningResultCard, { type ScreeningResult } from '@/components/mock-interview/ScreeningResultCard';
+import ScreeningResultModal from '@/components/mock-interview/ScreeningResultModal';
+import type { ScreeningResult } from '@/components/mock-interview/ScreeningResultCard';
 import type { InterviewRound, InterviewQuestion } from '@/components/mock-interview/types';
 
 const AUDIO_WEBHOOK_URL = 'https://figo6788.app.n8n.cloud/webhook/audio-to-text';
@@ -182,14 +183,6 @@ const MockInterviewPage = () => {
       };
 
       setScreeningResult(result);
-
-      if (result.passed) {
-        setCurrentRound('technical');
-        setCurrentQuestionIndex(0);
-        setQuestions([]);
-        setSubmittedQuestions(new Set());
-        audioBlobRef.current = null;
-      }
     } catch (error) {
       console.error('Screening evaluate error:', error);
       toast({
@@ -384,9 +377,23 @@ const MockInterviewPage = () => {
                       </Button>
                     )}
 
-                    {/* Screening result card */}
-                    {screeningResult && !screeningResult.passed && (
-                      <ScreeningResultCard result={screeningResult} />
+                    {/* Screening result modal */}
+                    {screeningResult && (
+                      <ScreeningResultModal
+                        result={screeningResult}
+                        open={!!screeningResult}
+                        onProceed={() => {
+                          setScreeningResult(null);
+                          setCurrentRound('technical');
+                          setCurrentQuestionIndex(0);
+                          setQuestions([]);
+                          setSubmittedQuestions(new Set());
+                          audioBlobRef.current = null;
+                        }}
+                        onRetake={() => {
+                          setScreeningResult(null);
+                        }}
+                      />
                     )}
                   </div>
 

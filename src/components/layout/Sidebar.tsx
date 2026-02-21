@@ -47,6 +47,7 @@ const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const { userRole } = useAuth();
+  // userRole is already lowercased in useAuth
   const navItems = userRole === 'admin' ? adminNavItems : userNavItems;
 
   return (

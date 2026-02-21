@@ -240,13 +240,11 @@ const AtsSection = () => {
       )}
       {uploadedFile && previewUrl && (
         <div className="mt-4 rounded-xl border border-border/40 shadow-[0_0_15px_hsl(var(--primary)/0.15)] overflow-hidden">
-          <object
-            data={previewUrl}
-            type="application/pdf"
+          <iframe
+            src={previewUrl}
             className="w-full h-[300px] rounded-xl bg-secondary/10"
-          >
-            <p className="text-sm text-muted-foreground text-center py-8">Unable to display PDF preview.</p>
-          </object>
+            title="Resume Preview"
+          />
         </div>
       )}
 
@@ -385,13 +383,11 @@ const AtsSection = () => {
             </DialogTitle>
           </DialogHeader>
           {previewUrl ? (
-            <object
-              data={previewUrl}
-              type="application/pdf"
+            <iframe
+              src={previewUrl}
               className="w-full flex-1 border-t border-border rounded-b-lg"
-            >
-              <p className="text-sm text-muted-foreground text-center py-8">Unable to display PDF preview.</p>
-            </object>
+              title="Resume Preview"
+            />
           ) : (
             <p className="text-sm text-muted-foreground text-center py-8">Upload a PDF resume to preview</p>
           )}

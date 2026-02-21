@@ -1,20 +1,16 @@
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   Activity, Brain, FileText, Target, Mic, Flame,
   TrendingUp, AlertTriangle, CheckCircle, Clock,
   BarChart3, Zap, ShieldCheck, BookOpen
 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
+import { useAppContext } from '@/contexts/AppContext';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, AreaChart, Area, BarChart, Bar
 } from 'recharts';
-
-// Mock data
-const readinessScore = 72;
-const riskStatus = 'Medium' as 'Low' | 'Medium' | 'High';
-const streak = 14;
-const weeklyActiveDays = 5;
 
 const weeklyTrend = [
   { week: 'W1', readiness: 58, dsa: 50, aptitude: 62, goals: 40 },
@@ -22,6 +18,9 @@ const weeklyTrend = [
   { week: 'W3', readiness: 68, dsa: 65, aptitude: 70, goals: 65 },
   { week: 'W4', readiness: 72, dsa: 70, aptitude: 74, goals: 78 },
 ];
+
+const streak = 14;
+const weeklyActiveDays = 5;
 
 const riskColors: Record<string, string> = {
   Low: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30',
@@ -34,7 +33,6 @@ const fadeUp = {
   animate: { opacity: 1, y: 0 },
 };
 
-// Gauge component
 const GaugeChart = ({ score }: { score: number }) => {
   const radius = 80;
   const circumference = Math.PI * radius;
@@ -43,19 +41,10 @@ const GaugeChart = ({ score }: { score: number }) => {
   return (
     <div className="relative flex items-center justify-center">
       <svg width="200" height="120" viewBox="0 0 200 120">
-        <path
-          d="M 20 100 A 80 80 0 0 1 180 100"
-          fill="none"
-          stroke="hsl(var(--muted))"
-          strokeWidth="12"
-          strokeLinecap="round"
-        />
+        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="hsl(var(--muted))" strokeWidth="12" strokeLinecap="round" />
         <motion.path
           d="M 20 100 A 80 80 0 0 1 180 100"
-          fill="none"
-          stroke="url(#gaugeGradient)"
-          strokeWidth="12"
-          strokeLinecap="round"
+          fill="none" stroke="url(#gaugeGradient)" strokeWidth="12" strokeLinecap="round"
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: circumference - progress }}
@@ -69,12 +58,7 @@ const GaugeChart = ({ score }: { score: number }) => {
         </defs>
       </svg>
       <div className="absolute bottom-2 text-center">
-        <motion.span
-          className="text-4xl font-bold gradient-text"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-        >
+        <motion.span className="text-4xl font-bold gradient-text" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
           {score}
         </motion.span>
         <p className="text-xs text-muted-foreground mt-1">out of 100</p>
@@ -83,22 +67,20 @@ const GaugeChart = ({ score }: { score: number }) => {
   );
 };
 
-// Metric card component
 const MetricCard = ({
-  icon: Icon,
-  title,
-  metrics,
-  delay = 0,
+  icon: Icon, title, metrics, delay = 0, onClick,
 }: {
   icon: React.ElementType;
   title: string;
   metrics: { label: string; value: string | number; highlight?: boolean }[];
   delay?: number;
+  onClick?: () => void;
 }) => (
   <motion.div
     {...fadeUp}
     transition={{ delay }}
-    className="glass-card p-5 card-hover"
+    className={`glass-card p-5 card-hover ${onClick ? 'cursor-pointer' : ''}`}
+    onClick={onClick}
   >
     <div className="flex items-center gap-2 mb-4">
       <div className="p-2 rounded-lg bg-primary/10">
@@ -110,13 +92,7 @@ const MetricCard = ({
       {metrics.map((m) => (
         <div key={m.label} className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">{m.label}</span>
-          <span
-            className={`text-sm font-semibold ${
-              m.highlight ? 'gradient-text' : ''
-            }`}
-          >
-            {m.value}
-          </span>
+          <span className={`text-sm font-semibold ${m.highlight ? 'gradient-text' : ''}`}>{m.value}</span>
         </div>
       ))}
     </div>
@@ -131,6 +107,11 @@ const chartTooltipStyle = {
 };
 
 const DashboardPage = () => {
+  const { scores, readiness } = useAppContext();
+  const navigate = useNavigate();
+
+  const riskStatus = readiness >= 75 ? 'Low' : readiness >= 50 ? 'Medium' : 'High';
+
   return (
     <Layout>
       <div className="section-container py-8">
@@ -145,24 +126,17 @@ const DashboardPage = () => {
         </motion.div>
 
         {/* Top Section – Career Readiness Overview */}
-        <motion.div
-          {...fadeUp}
-          transition={{ delay: 0.1 }}
-          className="glass-card p-8 mb-8"
-        >
+        <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="glass-card p-8 mb-8">
           <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="flex-1 flex flex-col items-center">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-primary" />
                 Career Readiness Index
               </h2>
-              <GaugeChart score={readinessScore} />
+              <GaugeChart score={readiness} />
             </div>
-
             <div className="flex flex-wrap justify-center gap-4 md:gap-6">
-              <div
-                className={`px-4 py-2 rounded-lg border text-sm font-medium ${riskColors[riskStatus]}`}
-              >
+              <div className={`px-4 py-2 rounded-lg border text-sm font-medium ${riskColors[riskStatus]}`}>
                 <div className="flex items-center gap-1.5">
                   <AlertTriangle className="w-3.5 h-3.5" />
                   Risk: {riskStatus}
@@ -196,61 +170,55 @@ const DashboardPage = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           <MetricCard
-            icon={Brain}
-            title="DSA Performance"
-            delay={0.2}
+            icon={Brain} title="DSA Performance" delay={0.2}
+            onClick={() => navigate('/puzzles')}
             metrics={[
               { label: 'Problems (this week)', value: 23 },
               { label: 'Difficulty Split', value: 'E:8 M:12 H:3' },
-              { label: 'DSA Score', value: '70/100', highlight: true },
+              { label: 'DSA Score', value: `${scores.dsa}/100`, highlight: true },
             ]}
           />
           <MetricCard
-            icon={Zap}
-            title="Aptitude Performance"
-            delay={0.25}
+            icon={Zap} title="Aptitude Performance" delay={0.25}
+            onClick={() => navigate('/quiz')}
             metrics={[
               { label: 'Mock Score Avg', value: '74%' },
               { label: 'Accuracy', value: '81%' },
-              { label: 'Aptitude Score', value: '74/100', highlight: true },
+              { label: 'Aptitude Score', value: `${scores.aptitude}/100`, highlight: true },
             ]}
           />
           <MetricCard
-            icon={FileText}
-            title="Resume Optimization"
-            delay={0.3}
+            icon={FileText} title="Resume Optimization" delay={0.3}
+            onClick={() => navigate('/resume-builder')}
             metrics={[
-              { label: 'ATS Score', value: '82/100', highlight: true },
+              { label: 'ATS Score', value: `${scores.ats}/100`, highlight: true },
               { label: 'Keyword Match', value: '76%' },
             ]}
           />
           <MetricCard
-            icon={Target}
-            title="Skill Gap Analysis"
-            delay={0.35}
+            icon={Target} title="Skill Gap Analysis" delay={0.35}
+            onClick={() => navigate('/skill-gap')}
             metrics={[
-              { label: 'Alignment Score', value: '65/100', highlight: true },
+              { label: 'Alignment Score', value: `${scores.skillGap}/100`, highlight: true },
               { label: 'Missing Critical Skills', value: 3 },
             ]}
           />
           <MetricCard
-            icon={Mic}
-            title="Interview Performance"
-            delay={0.4}
+            icon={Mic} title="Interview Performance" delay={0.4}
+            onClick={() => navigate('/mock-interview')}
             metrics={[
               { label: 'Screening Score', value: '78%' },
               { label: 'Technical Score', value: '70%' },
-              { label: 'Overall Score', value: '74/100', highlight: true },
+              { label: 'Overall Score', value: `${scores.interview}/100`, highlight: true },
             ]}
           />
           <MetricCard
-            icon={Activity}
-            title="Consistency Metrics"
-            delay={0.45}
+            icon={Activity} title="Consistency Metrics" delay={0.45}
+            onClick={() => navigate('/planner')}
             metrics={[
               { label: 'Active Days (week)', value: `${weeklyActiveDays}/7` },
               { label: 'Current Streak', value: `${streak} days` },
-              { label: 'Consistency Score', value: '80/100', highlight: true },
+              { label: 'Consistency Score', value: `${scores.consistency}/100`, highlight: true },
             ]}
           />
         </div>
@@ -264,7 +232,6 @@ const DashboardPage = () => {
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-          {/* Readiness Trend */}
           <motion.div {...fadeUp} transition={{ delay: 0.55 }} className="glass-card p-5">
             <h3 className="text-sm font-semibold mb-4">Readiness Score Trend</h3>
             <div className="h-[220px]">
@@ -280,19 +247,12 @@ const DashboardPage = () => {
                   <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={11} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} domain={[0, 100]} />
                   <Tooltip contentStyle={chartTooltipStyle} />
-                  <Area
-                    type="monotone"
-                    dataKey="readiness"
-                    stroke="hsl(217 91% 60%)"
-                    strokeWidth={2}
-                    fill="url(#readinessFill)"
-                  />
+                  <Area type="monotone" dataKey="readiness" stroke="hsl(217 91% 60%)" strokeWidth={2} fill="url(#readinessFill)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </motion.div>
 
-          {/* DSA Trend */}
           <motion.div {...fadeUp} transition={{ delay: 0.6 }} className="glass-card p-5">
             <h3 className="text-sm font-semibold mb-4">DSA Trend</h3>
             <div className="h-[220px]">
@@ -302,19 +262,12 @@ const DashboardPage = () => {
                   <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={11} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} domain={[0, 100]} />
                   <Tooltip contentStyle={chartTooltipStyle} />
-                  <Line
-                    type="monotone"
-                    dataKey="dsa"
-                    stroke="hsl(263 70% 50%)"
-                    strokeWidth={2}
-                    dot={{ fill: 'hsl(263 70% 50%)' }}
-                  />
+                  <Line type="monotone" dataKey="dsa" stroke="hsl(263 70% 50%)" strokeWidth={2} dot={{ fill: 'hsl(263 70% 50%)' }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </motion.div>
 
-          {/* Aptitude Trend */}
           <motion.div {...fadeUp} transition={{ delay: 0.65 }} className="glass-card p-5">
             <h3 className="text-sm font-semibold mb-4">Aptitude Trend</h3>
             <div className="h-[220px]">
@@ -324,19 +277,12 @@ const DashboardPage = () => {
                   <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={11} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} domain={[0, 100]} />
                   <Tooltip contentStyle={chartTooltipStyle} />
-                  <Line
-                    type="monotone"
-                    dataKey="aptitude"
-                    stroke="hsl(150 60% 50%)"
-                    strokeWidth={2}
-                    dot={{ fill: 'hsl(150 60% 50%)' }}
-                  />
+                  <Line type="monotone" dataKey="aptitude" stroke="hsl(150 60% 50%)" strokeWidth={2} dot={{ fill: 'hsl(150 60% 50%)' }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </motion.div>
 
-          {/* Goal Completion */}
           <motion.div {...fadeUp} transition={{ delay: 0.7 }} className="glass-card p-5">
             <h3 className="text-sm font-semibold mb-4">Goal Completion %</h3>
             <div className="h-[220px]">
@@ -346,12 +292,7 @@ const DashboardPage = () => {
                   <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={11} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} domain={[0, 100]} />
                   <Tooltip contentStyle={chartTooltipStyle} />
-                  <Bar
-                    dataKey="goals"
-                    fill="hsl(217 91% 60%)"
-                    radius={[4, 4, 0, 0]}
-                    opacity={0.8}
-                  />
+                  <Bar dataKey="goals" fill="hsl(217 91% 60%)" radius={[4, 4, 0, 0]} opacity={0.8} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

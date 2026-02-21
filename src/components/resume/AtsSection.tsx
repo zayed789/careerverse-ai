@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileText, CheckCircle2, AlertTriangle, Lightbulb, XCircle, X, Loader2, BarChart3, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -101,6 +101,14 @@ const AtsSection = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Cleanup object URL on unmount or when previewUrl changes
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
   const analyzeResume = useCallback(async (file: File) => {
     setIsAnalyzing(true);
     setAtsResult(null);
@@ -358,12 +366,16 @@ const AtsSection = () => {
               {uploadedFile?.name}
             </DialogTitle>
           </DialogHeader>
-          {previewUrl && (
-            <iframe
-              src={previewUrl}
-              className="w-full flex-1 border-t border-border"
-              title="Resume Preview"
-            />
+          {previewUrl ? (
+            <object
+              data={previewUrl}
+              type="application/pdf"
+              className="w-full flex-1 border-t border-border rounded-b-lg"
+            >
+              <p className="text-sm text-muted-foreground text-center py-8">Unable to display PDF preview.</p>
+            </object>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-8">Upload a PDF resume to preview</p>
           )}
         </DialogContent>
       </Dialog>

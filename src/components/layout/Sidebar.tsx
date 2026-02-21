@@ -47,7 +47,7 @@ const Sidebar = () => {
       initial={false}
       animate={{ width: collapsed ? 72 : 260 }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="fixed left-0 top-0 h-screen z-40 flex flex-col border-r border-border/50 bg-sidebar/80 backdrop-blur-xl"
+      className="fixed left-0 top-0 h-screen z-40 flex flex-col border-r border-sidebar-border bg-sidebar backdrop-blur-xl"
     >
       {/* Logo */}
       <div className="flex items-center h-16 px-4 border-b border-border/50">

@@ -2,26 +2,15 @@ import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Home,
-  Map,
-  Sparkles,
-  BookOpen,
-  FileText,
-  BarChart3,
-  Calendar,
-  HelpCircle,
-  ChevronLeft,
-  ChevronRight,
-  Compass,
-  Zap,
-  AudioWaveform,
-  LayoutDashboard,
-  Code2,
-  Brain,
+  Home, Map, Sparkles, BookOpen, FileText, BarChart3,
+  Calendar, HelpCircle, ChevronLeft, ChevronRight,
+  Compass, Zap, AudioWaveform, LayoutDashboard, Code2, Brain,
+  Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
 
-const navItems = [
+const studentNavItems = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/domains', icon: Compass, label: 'Explore Domains' },
@@ -32,15 +21,21 @@ const navItems = [
   { path: '/courses', icon: BookOpen, label: 'Courses' },
   { path: '/resume-builder', icon: FileText, label: 'Resume Builder' },
   { path: '/skill-gap', icon: BarChart3, label: 'Skill Gap Analyzer' },
-  
   { path: '/mock-interview', icon: AudioWaveform, label: 'Mock Interview' },
   { path: '/planner', icon: Calendar, label: 'Planner' },
   { path: '/help', icon: HelpCircle, label: 'Help' },
 ];
 
+const adminNavItems = [
+  { path: '/admin', icon: Shield, label: 'Admin Dashboard' },
+];
+
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const { isAdmin } = useAuth();
+
+  const navItems = isAdmin ? adminNavItems : studentNavItems;
 
   return (
     <motion.aside
@@ -109,7 +104,6 @@ const Sidebar = () => {
                     )}
                   </AnimatePresence>
                   
-                  {/* Active indicator glow */}
                   {isActive && (
                     <motion.div
                       layoutId="activeGlow"

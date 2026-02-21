@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading, isRoleLoading, isAdmin } = useAuth();
 
   if (loading || isRoleLoading) {
@@ -16,12 +16,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/sign-in" replace />;
   }
 
-  // Admin should only access /admin
-  if (isAdmin) {
-    return <Navigate to="/admin" replace />;
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;
 };
 
-export default ProtectedRoute;
+export default AdminRoute;

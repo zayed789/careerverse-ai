@@ -1,10 +1,11 @@
 import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileText, CheckCircle2, AlertTriangle, Lightbulb, XCircle, X, Loader2, BarChart3 } from 'lucide-react';
+import { Upload, FileText, CheckCircle2, AlertTriangle, Lightbulb, XCircle, X, Loader2, BarChart3, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
 
-const ATS_WEBHOOK_URL = 'https://figo6788.app.n8n.cloud/webhook/resume-ats';
+const ATS_WEBHOOK_URL = 'https://testcase6788.app.n8n.cloud/webhook-test/resume-ats';
 
 interface AtsWebhookResponse {
   ats_score: number;
@@ -96,6 +97,8 @@ const AtsSection = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [atsResult, setAtsResult] = useState<AtsWebhookResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const analyzeResume = useCallback(async (file: File) => {
@@ -140,11 +143,15 @@ const AtsSection = () => {
       toast({ title: 'File too large', description: 'Maximum file size is 5 MB.', variant: 'destructive' });
       return;
     }
+    // Revoke old preview URL
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
     setUploadedFile(file);
     setAtsResult(null);
     setError(null);
     analyzeResume(file);
-  }, [analyzeResume]);
+  }, [analyzeResume, previewUrl]);
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -160,6 +167,8 @@ const AtsSection = () => {
   const handleDragLeave = () => setIsDragging(false);
 
   const clearUpload = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
     setUploadedFile(null);
     setAtsResult(null);
     setError(null);
@@ -230,6 +239,9 @@ const AtsSection = () => {
           <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30">
             <FileText className="w-4 h-4 text-primary" />
             <span className="text-sm flex-1 truncate">{uploadedFile.name}</span>
+            <button onClick={() => setPreviewOpen(true)} className="text-muted-foreground hover:text-foreground transition-colors" title="Preview file">
+              <Eye className="w-4 h-4" />
+            </button>
             <button onClick={clearUpload} className="text-muted-foreground hover:text-foreground transition-colors">
               <X className="w-4 h-4" />
             </button>
@@ -254,6 +266,9 @@ const AtsSection = () => {
             <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 border border-border/30">
               <FileText className="w-4 h-4 text-primary" />
               <span className="text-sm flex-1 truncate">{uploadedFile.name}</span>
+              <button onClick={() => setPreviewOpen(true)} className="text-muted-foreground hover:text-foreground transition-colors" title="Preview file">
+                <Eye className="w-4 h-4" />
+              </button>
               <button onClick={clearUpload} className="text-muted-foreground hover:text-foreground transition-colors">
                 <X className="w-4 h-4" />
               </button>
@@ -333,6 +348,25 @@ const AtsSection = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── PDF Preview Dialog ── */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-4xl h-[85vh] p-0 gap-0">
+          <DialogHeader className="p-4 pb-2">
+            <DialogTitle className="flex items-center gap-2 text-sm">
+              <FileText className="w-4 h-4 text-primary" />
+              {uploadedFile?.name}
+            </DialogTitle>
+          </DialogHeader>
+          {previewUrl && (
+            <iframe
+              src={previewUrl}
+              className="w-full flex-1 border-t border-border"
+              title="Resume Preview"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };

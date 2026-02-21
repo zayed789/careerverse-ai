@@ -232,6 +232,24 @@ const AtsSection = () => {
         </div>
       )}
 
+      {/* ── Inline PDF Preview ── */}
+      {!uploadedFile && !isAnalyzing && (
+        <div className="mt-4 rounded-xl border border-border/30 bg-secondary/10 p-6 text-center">
+          <p className="text-sm text-muted-foreground">Upload a PDF resume to preview</p>
+        </div>
+      )}
+      {uploadedFile && previewUrl && (
+        <div className="mt-4 rounded-xl border border-border/40 shadow-[0_0_15px_hsl(var(--primary)/0.15)] overflow-hidden">
+          <object
+            data={previewUrl}
+            type="application/pdf"
+            className="w-full h-[300px] rounded-xl bg-secondary/10"
+          >
+            <p className="text-sm text-muted-foreground text-center py-8">Unable to display PDF preview.</p>
+          </object>
+        </div>
+      )}
+
       {/* ── Analyzing ── */}
       {uploadedFile && isAnalyzing && (
         <div className="flex items-center gap-3 p-4 rounded-lg bg-secondary/30 border border-border/30">

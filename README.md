@@ -1,73 +1,212 @@
-# Welcome to your Lovable project
+🚀 CareerVerse AI – Placement Intelligence System
 
-## Project info
+AI-Powered Career Development & Placement Readiness Platform
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+CareerVerse AI is a multi-agent, full-stack placement intelligence system that evaluates and tracks a student’s career readiness across DSA, Aptitude, Resume Optimization, Skill Gap Analysis, and Interview Performance — all unified under a single Career Readiness Index.
 
-## How can I edit this code?
+🌟 Overview
 
-There are several ways of editing your application.
+Students prepare for placements across multiple platforms (coding sites, aptitude books, mock interviews), but there is no unified system to measure consistency, readiness, or performance trends.
 
-**Use Lovable**
+CareerVerse AI solves this by:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Evaluating performance using AI agents
 
-Changes made via Lovable will be committed automatically to this repo.
+Persisting metrics per user
 
-**Use your preferred IDE**
+Aggregating scores into a centralized dashboard
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Providing a real-time Career Readiness Index (0–100)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+🧠 Core Features
+📊 Placement Intelligence Dashboard
 
-Follow these steps:
+Career Readiness Index (Gauge)
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Risk Status Indicator
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+DSA Performance
 
-# Step 3: Install the necessary dependencies.
-npm i
+Aptitude Performance
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+Resume ATS Score
+
+Skill Gap Alignment Score
+
+Interview Performance
+
+Consistency Metrics
+
+Trend Analytics
+
+💻 DSA Practice Arena
+
+Easy / Medium / Hard Problems
+
+Built-in JavaScript Code Editor
+
+AI-based evaluation
+
+Rubric-based scoring (correctness, optimization, clarity)
+
+Persistent progress tracking
+
+🧮 Aptitude Challenge
+
+20-question assessment
+
+Automated scoring
+
+Section-based evaluation
+
+📄 Resume Optimization
+
+AI-powered ATS scoring
+
+Keyword match percentage
+
+Resume improvement insights
+
+🎯 Skill Gap Analyzer
+
+Role-based alignment scoring
+
+Missing critical skills detection
+
+AI-generated recommendations
+
+🎙️ Mock Interview System
+
+Multi-stage interview evaluation
+
+AI scoring
+
+Structured feedback
+
+🏗️ System Architecture
+High-Level Design
+
+User (Frontend – React / Lovable)
+↓
+n8n AI Orchestration (Webhooks + Agents)
+↓
+Supabase (Auth + PostgreSQL Database)
+↓
+Dashboard Aggregation
+
+⚙️ Tech Stack
+Frontend
+
+React (Vite)
+
+Tailwind CSS
+
+Lovable AI Builder
+
+Framer Motion (animations)
+
+Lucide Icons
+
+Backend / Orchestration
+
+n8n (AI Agent Workflows)
+
+Webhook-based evaluation
+
+Database
+
+Supabase (PostgreSQL)
+
+Supabase Auth (Email + Password)
+
+AI Layer
+
+LLM-based evaluation agents
+
+Rubric-driven DSA scoring
+
+Structured JSON outputs
+
+🗄️ Database Schema
+user_metrics
+Column	Type
+user_id	uuid (Primary Key)
+dsa_score	integer
+aptitude_score	integer
+ats_score	integer
+skill_gap_score	integer
+interview_score	integer
+consistency_score	integer
+readiness_score	integer
+solved_problems	json
+updated_at	timestamp
+
+Each user has a dedicated row storing their placement metrics.
+
+📈 Career Readiness Formula
+
+readiness =
+(0.30 × DSA Score) +
+(0.20 × Aptitude Score) +
+(0.15 × ATS Score) +
+(0.10 × Skill Gap Score) +
+(0.15 × Interview Score) +
+(0.10 × Consistency Score)
+
+Clamped between 0–100.
+
+🔐 Authentication & Data Isolation
+
+Supabase Auth (Email + Password)
+
+Row-Level Security (RLS) enabled
+
+Data filtered by user_id = auth.uid()
+
+Each user sees only their own metrics
+
+🎨 UI Features
+
+Dark Mode (default)
+
+Full Light Mode support
+
+Smooth theme transitions
+
+Premium SaaS design
+
+Responsive layout
+
+Gradient typography
+
+Dashboard analytics visuals
+
+🚀 Getting Started (Local Setup)
+1️⃣ Clone the Repository
+git clone https://github.com/yourusername/careerverse-ai.git
+cd careerverse-ai
+2️⃣ Install Dependencies
+npm install
+3️⃣ Setup Environment Variables
+
+Create a .env file:
+
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your_anon_public_key
+4️⃣ Run Development Server
 npm run dev
-```
+🔄 n8n Webhooks
 
-**Edit a file directly in GitHub**
+The platform uses webhook-based AI evaluation:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+/webhook/dsa
 
-**Use GitHub Codespaces**
+/webhook/aptitude
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+/webhook/resume-analysis
 
-## What technologies are used for this project?
+/webhook/skill-gap
 
-This project is built with:
+/webhook/interview
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Ensure workflows are activated in production mode for live usage.

@@ -20,6 +20,9 @@ interface ProfileRow {
 interface MetricRow {
   id: string;
   user_id: string;
+  name: string | null;
+  email: string | null;
+  role: string | null;
   dsa_score: number | null;
   aptitude_score: number | null;
   ats_score: number | null;
@@ -155,7 +158,9 @@ const AdminPage = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left">
-                  <th className="px-4 py-3 text-muted-foreground font-medium">User ID</th>
+                  <th className="px-4 py-3 text-muted-foreground font-medium">Name</th>
+                  <th className="px-4 py-3 text-muted-foreground font-medium">Email</th>
+                  <th className="px-4 py-3 text-muted-foreground font-medium">Role</th>
                   <th className="px-4 py-3 text-muted-foreground font-medium">DSA</th>
                   <th className="px-4 py-3 text-muted-foreground font-medium">Aptitude</th>
                   <th className="px-4 py-3 text-muted-foreground font-medium">ATS</th>
@@ -168,7 +173,13 @@ const AdminPage = () => {
               <tbody>
                 {metrics.map(m => (
                   <tr key={m.id} className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
-                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{m.user_id.slice(0, 8)}…</td>
+                    <td className="px-4 py-3">{m.name ?? '—'}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{m.email ?? '—'}</td>
+                    <td className="px-4 py-3">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                        {m.role ?? 'Student'}
+                      </span>
+                    </td>
                     <td className="px-4 py-3">{m.dsa_score ?? 0}</td>
                     <td className="px-4 py-3">{m.aptitude_score ?? 0}</td>
                     <td className="px-4 py-3">{m.ats_score ?? 0}</td>

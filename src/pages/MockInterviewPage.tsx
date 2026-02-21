@@ -16,8 +16,8 @@ import ScreeningResultModal from '@/components/mock-interview/ScreeningResultMod
 import type { ScreeningResult } from '@/components/mock-interview/ScreeningResultCard';
 import type { InterviewRound, InterviewQuestion } from '@/components/mock-interview/types';
 
-const AUDIO_WEBHOOK_URL = 'https://figo6788.app.n8n.cloud/webhook/audio-to-text';
-const SCREENING_EVALUATE_URL = 'https://figo6788.app.n8n.cloud/webhook-test/screening_evaluate';
+const AUDIO_WEBHOOK_URL = 'https://testcase6788.app.n8n.cloud/webhook-test/audio-to-text';
+const SCREENING_EVALUATE_URL = 'https://testcase6788.app.n8n.cloud/webhook-test/screening_evaluate';
 
 function generateSessionId(): string {
   return `session-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -60,7 +60,7 @@ const MockInterviewPage = () => {
     const newSessionId = generateSessionId();
 
     try {
-      const response = await fetch('https://figo6788.app.n8n.cloud/webhook/screening', {
+      const response = await fetch('https://testcase6788.app.n8n.cloud/webhook-test/screening', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

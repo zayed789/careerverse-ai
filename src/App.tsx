@@ -12,7 +12,7 @@ import RoadmapGeneratorPage from "./pages/RoadmapGeneratorPage";
 import CoursesPage from "./pages/CoursesPage";
 import ResumeBuilderPage from "./pages/ResumeBuilderPage";
 import SkillGapPage from "./pages/SkillGapPage";
-import TrendsPage from "./pages/TrendsPage";
+
 import PlannerPage from "./pages/PlannerPage";
 import HelpPage from "./pages/HelpPage";
 import SignInPage from "./pages/SignInPage";
@@ -46,7 +46,7 @@ const App = () => (
             <Route path="/courses" element={<CoursesPage />} />
             <Route path="/resume-builder" element={<ResumeBuilderPage />} />
             <Route path="/skill-gap" element={<SkillGapPage />} />
-            <Route path="/trends" element={<TrendsPage />} />
+            
             <Route path="/planner" element={<PlannerPage />} />
             <Route path="/help" element={<HelpPage />} />
             <Route path="/sign-in" element={<SignInPage />} />

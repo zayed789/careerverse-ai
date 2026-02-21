@@ -11,21 +11,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 
 interface NavbarProps {
   onMenuClick?: () => void;
 }
 
 const Navbar = ({ onMenuClick }: NavbarProps) => {
-  const [isDark, setIsDark] = useState(true);
+  const { isDark, toggleTheme } = useTheme();
   const [searchFocused, setSearchFocused] = useState(false);
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
-
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle('dark');
-  };
 
   const handleLogout = () => {
     signOut();

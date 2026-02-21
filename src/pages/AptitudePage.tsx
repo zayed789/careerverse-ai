@@ -38,29 +38,19 @@ interface Question {
 }
 
 const questions: Question[] = [
-  // Quantitative Aptitude (7)
+  // Quantitative Aptitude (4)
   { id: 1, section: 'Quantitative Aptitude', text: 'If 3x + 7 = 22, what is the value of x?', options: ['3', '5', '7', '4'], correct: 1 },
   { id: 2, section: 'Quantitative Aptitude', text: 'A train 150m long passes a pole in 15 seconds. What is the speed of the train in km/h?', options: ['36', '40', '30', '45'], correct: 0 },
-  { id: 3, section: 'Quantitative Aptitude', text: 'If the ratio of A to B is 3:5, and B to C is 2:3, what is A:C?', options: ['2:5', '6:15', '1:3', '3:8'], correct: 0 },
-  { id: 4, section: 'Quantitative Aptitude', text: 'What is 25% of 840?', options: ['200', '210', '220', '230'], correct: 1 },
-  { id: 5, section: 'Quantitative Aptitude', text: 'If a number is increased by 20% and then decreased by 20%, the net change is:', options: ['0%', '-4%', '+4%', '-2%'], correct: 1 },
-  { id: 6, section: 'Quantitative Aptitude', text: 'The average of 5 numbers is 42. If one number is excluded, the average becomes 38. What is the excluded number?', options: ['58', '52', '48', '62'], correct: 0 },
-  { id: 7, section: 'Quantitative Aptitude', text: 'A cistern can be filled by pipe A in 12 hours and by pipe B in 18 hours. How long will it take to fill if both are opened?', options: ['7.2 hrs', '6.5 hrs', '8 hrs', '5 hrs'], correct: 0 },
-  // Logical Reasoning (7)
-  { id: 8, section: 'Logical Reasoning', text: 'Find the next number in the series: 2, 6, 12, 20, 30, ?', options: ['42', '40', '38', '44'], correct: 0 },
-  { id: 9, section: 'Logical Reasoning', text: 'If FRIEND is coded as HUMGPF, how is CANDLE coded?', options: ['EDRIRL', 'DCPFMG', 'ECRFNI', 'ECPFNG'], correct: 3 },
-  { id: 10, section: 'Logical Reasoning', text: 'All roses are flowers. Some flowers fade quickly. Which conclusion follows?', options: ['All roses fade quickly', 'Some roses may fade quickly', 'No roses fade quickly', 'Some flowers are not roses'], correct: 1 },
-  { id: 11, section: 'Logical Reasoning', text: 'Statement: Some cats are dogs. All dogs are animals. Conclusion: Some cats are animals.', options: ['True', 'False', 'Cannot be determined', 'Partially true'], correct: 0 },
-  { id: 12, section: 'Logical Reasoning', text: 'If A > B, B > C, and C > D, which of the following is true?', options: ['D > A', 'A > D', 'B > D only', 'Cannot determine'], correct: 1 },
-  { id: 13, section: 'Logical Reasoning', text: 'Looking at a portrait, Aman said "He is the son of my grandfather\'s only son." Who is in the portrait?', options: ['Aman himself', 'His father', 'His son', 'His brother'], correct: 3 },
-  { id: 14, section: 'Logical Reasoning', text: 'A clock shows 3:15. What is the angle between the hour and minute hands?', options: ['0°', '7.5°', '15°', '22.5°'], correct: 1 },
-  // Verbal Ability (6)
-  { id: 15, section: 'Verbal Ability', text: 'Choose the synonym of "Ephemeral":', options: ['Eternal', 'Transient', 'Sturdy', 'Permanent'], correct: 1 },
-  { id: 16, section: 'Verbal Ability', text: 'Choose the antonym of "Benevolent":', options: ['Kind', 'Generous', 'Malevolent', 'Charitable'], correct: 2 },
-  { id: 17, section: 'Verbal Ability', text: 'Fill in the blank: "She was too _____ to speak in public."', options: ['confident', 'timid', 'aggressive', 'eloquent'], correct: 1 },
-  { id: 18, section: 'Verbal Ability', text: 'Identify the error: "Each of the boys have completed their homework."', options: ['Each', 'have', 'their', 'No error'], correct: 1 },
-  { id: 19, section: 'Verbal Ability', text: 'Choose the correct sentence:', options: ['He don\'t know nothing.', 'He doesn\'t know anything.', 'He don\'t know anything.', 'He doesn\'t know nothing.'], correct: 1 },
-  { id: 20, section: 'Verbal Ability', text: '"To burn the midnight oil" means:', options: ['To waste resources', 'To work late into the night', 'To destroy something', 'To cook at night'], correct: 1 },
+  { id: 3, section: 'Quantitative Aptitude', text: 'What is 25% of 840?', options: ['200', '210', '220', '230'], correct: 1 },
+  { id: 4, section: 'Quantitative Aptitude', text: 'If a number is increased by 20% and then decreased by 20%, the net change is:', options: ['0%', '-4%', '+4%', '-2%'], correct: 1 },
+  // Logical Reasoning (3)
+  { id: 5, section: 'Logical Reasoning', text: 'Find the next number in the series: 2, 6, 12, 20, 30, ?', options: ['42', '40', '38', '44'], correct: 0 },
+  { id: 6, section: 'Logical Reasoning', text: 'All roses are flowers. Some flowers fade quickly. Which conclusion follows?', options: ['All roses fade quickly', 'Some roses may fade quickly', 'No roses fade quickly', 'Some flowers are not roses'], correct: 1 },
+  { id: 7, section: 'Logical Reasoning', text: 'If A > B, B > C, and C > D, which of the following is true?', options: ['D > A', 'A > D', 'B > D only', 'Cannot determine'], correct: 1 },
+  // Verbal Ability (3)
+  { id: 8, section: 'Verbal Ability', text: 'Choose the synonym of "Ephemeral":', options: ['Eternal', 'Transient', 'Sturdy', 'Permanent'], correct: 1 },
+  { id: 9, section: 'Verbal Ability', text: 'Choose the antonym of "Benevolent":', options: ['Kind', 'Generous', 'Malevolent', 'Charitable'], correct: 2 },
+  { id: 10, section: 'Verbal Ability', text: '"To burn the midnight oil" means:', options: ['To waste resources', 'To work late into the night', 'To destroy something', 'To cook at night'], correct: 1 },
 ];
 
 /* ─── Types ─── */
@@ -87,7 +77,7 @@ interface Results {
 
 /* ─── Component ─── */
 
-const TOTAL_TIME = 30 * 60; // 30 minutes in seconds
+const TOTAL_TIME = 15 * 60; // 15 minutes in seconds
 
 const AptitudePage = () => {
   const navigate = useNavigate();
@@ -96,8 +86,8 @@ const AptitudePage = () => {
 
   const [phase, setPhase] = useState<Phase>('overview');
   const [currentQ, setCurrentQ] = useState(0);
-  const [answers, setAnswers] = useState<(number | null)[]>(Array(20).fill(null));
-  const [flagged, setFlagged] = useState<boolean[]>(Array(20).fill(false));
+  const [answers, setAnswers] = useState<(number | null)[]>(Array(10).fill(null));
+  const [flagged, setFlagged] = useState<boolean[]>(Array(10).fill(false));
   const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
   const [results, setResults] = useState<Results | null>(null);
   const [bestScore, setBestScore] = useState<number | null>(() => {
@@ -154,8 +144,8 @@ const AptitudePage = () => {
   };
 
   const startAssessment = () => {
-    setAnswers(Array(20).fill(null));
-    setFlagged(Array(20).fill(false));
+    setAnswers(Array(10).fill(null));
+    setFlagged(Array(10).fill(false));
     setTimeLeft(TOTAL_TIME);
     setCurrentQ(0);
     setResults(null);
@@ -179,7 +169,7 @@ const AptitudePage = () => {
       }
     });
 
-    const accuracy = Math.round((totalCorrect / 20) * 100);
+    const accuracy = Math.round((totalCorrect / 10) * 100);
     const overallScore = accuracy;
     const badge =
       overallScore >= 80 ? 'Advanced' : overallScore >= 50 ? 'Intermediate' : 'Beginner';
@@ -266,7 +256,7 @@ const AptitudePage = () => {
 
             <div className="glass-card p-6 space-y-6">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <StatBox label="Total Questions" value="20" />
+                <StatBox label="Total Questions" value="10" />
                 <StatBox label="Sections" value="3" />
                 <StatBox label="Best Score" value={bestScore !== null ? `${bestScore}%` : '—'} />
                 <StatBox label="Last Score" value={lastScore !== null ? `${lastScore}%` : '—'} />
@@ -283,7 +273,7 @@ const AptitudePage = () => {
 
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <Clock className="w-4 h-4" />
-                <span>30 minutes time limit</span>
+                <span>15 minutes time limit</span>
               </div>
 
               <Button onClick={startAssessment} className="glow-button text-primary-foreground border-0" size="lg">
@@ -327,7 +317,7 @@ const AptitudePage = () => {
             {/* Summary Card */}
             <div className="glass-card p-6 grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <StatBox label="Overall Score" value={`${results.overall}%`} />
-              <StatBox label="Correct" value={`${results.correct} / 20`} />
+              <StatBox label="Correct" value={`${results.correct} / 10`} />
               <StatBox label="Accuracy" value={`${results.accuracy}%`} />
               <div className="flex flex-col items-center gap-1">
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">Badge</span>

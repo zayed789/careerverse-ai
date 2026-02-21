@@ -121,8 +121,11 @@ const ProblemCard = ({
       setResult(data);
       setReportOpen(true);
 
-      if (data.correct) {
-        const awarded = Math.min(data.score, config.maxPoints);
+      const earnedScore = typeof data.score === 'number' ? data.score : 0;
+      const isSolved = data.correct === true && earnedScore > 0;
+
+      if (isSolved) {
+        const awarded = Math.min(earnedScore, config.maxPoints);
         onSolved(problem.id, awarded, data);
         toast({ title: '✅ Correct Solution!', description: `Score: ${awarded}/${config.maxPoints}` });
       } else {

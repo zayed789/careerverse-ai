@@ -6,54 +6,55 @@
 
 @layer base {
   :root {
-    /* Light mode - keeping for compatibility but dark is default */
+    --radius: 0.75rem;
+  }
+
+  .light {
     --background: 220 20% 97%;
     --foreground: 222 47% 11%;
 
-    --card: 0 0% 100%;
+    --card: 220 16% 100%;
     --card-foreground: 222 47% 11%;
 
-    --popover: 0 0% 100%;
+    --popover: 220 16% 100%;
     --popover-foreground: 222 47% 11%;
 
     --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96%;
+    --secondary: 214 32% 94%;
     --secondary-foreground: 222 47% 11%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 214 25% 93%;
+    --muted-foreground: 215 16% 42%;
 
     --accent: 262 83% 58%;
-    --accent-foreground: 210 40% 98%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
+    --border: 214 25% 88%;
+    --input: 214 25% 88%;
     --ring: 221 83% 53%;
 
-    --radius: 0.75rem;
-
     /* Sidebar */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5% 26%;
+    --sidebar-background: 220 16% 96%;
+    --sidebar-foreground: 222 30% 25%;
     --sidebar-primary: 221 83% 53%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 5% 96%;
-    --sidebar-accent-foreground: 240 6% 10%;
-    --sidebar-border: 220 13% 91%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 214 25% 93%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 25% 88%;
     --sidebar-ring: 221 83% 53%;
 
-    /* Custom CareerVerse tokens */
+    /* Custom CareerVerse tokens - light */
     --glow-primary: 221 83% 53%;
     --glow-accent: 262 83% 58%;
-    --gradient-start: 221 83% 53%;
-    --gradient-end: 262 83% 58%;
-    --glass-bg: 0 0% 100% / 0.7;
-    --glass-border: 0 0% 100% / 0.2;
+    --gradient-start: 221 83% 48%;
+    --gradient-end: 262 83% 55%;
+    --glass-bg: 0 0% 100% / 0.8;
+    --glass-border: 214 25% 88% / 0.5;
   }
 
   .dark {
@@ -113,10 +114,17 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
   html {
     scroll-behavior: smooth;
+  }
+
+  *, *::before, *::after {
+    transition-property: background-color, border-color, box-shadow;
+    transition-duration: 0.25s;
+    transition-timing-function: ease;
   }
 }
 
@@ -212,6 +220,24 @@
   .starfield {
     @apply fixed inset-0 -z-10 overflow-hidden;
     background: radial-gradient(ellipse at bottom, hsl(222 47% 11%) 0%, hsl(222 47% 4%) 100%);
+  }
+
+  .light .starfield {
+    background: radial-gradient(ellipse at bottom, hsl(220 20% 97%) 0%, hsl(220 16% 92%) 100%);
+  }
+
+  .light .glass-card {
+    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.06), 0 4px 12px hsl(0 0% 0% / 0.04);
+  }
+
+  .light .glow-button {
+    box-shadow: 0 0 12px hsl(var(--glow-primary) / 0.25),
+                0 0 24px hsl(var(--glow-primary) / 0.12);
+  }
+
+  .light .glow-button:hover {
+    box-shadow: 0 0 18px hsl(var(--glow-primary) / 0.35),
+                0 0 36px hsl(var(--glow-primary) / 0.18);
   }
 
   /* Section container */

@@ -18,12 +18,10 @@ import {
   LayoutDashboard,
   Code2,
   Brain,
-  ShieldCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/hooks/useAuth';
 
-const userNavItems = [
+const navItems = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/domains', icon: Compass, label: 'Explore Domains' },
@@ -34,21 +32,15 @@ const userNavItems = [
   { path: '/courses', icon: BookOpen, label: 'Courses' },
   { path: '/resume-builder', icon: FileText, label: 'Resume Builder' },
   { path: '/skill-gap', icon: BarChart3, label: 'Skill Gap Analyzer' },
+  
   { path: '/mock-interview', icon: AudioWaveform, label: 'Mock Interview' },
   { path: '/planner', icon: Calendar, label: 'Planner' },
   { path: '/help', icon: HelpCircle, label: 'Help' },
 ];
 
-const adminNavItems = [
-  { path: '/admin', icon: ShieldCheck, label: 'Admin Dashboard' },
-];
-
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
-  const { userRole } = useAuth();
-  // userRole is already lowercased in useAuth
-  const navItems = userRole === 'admin' ? adminNavItems : userNavItems;
 
   return (
     <motion.aside

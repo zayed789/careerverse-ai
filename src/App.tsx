@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AppProvider } from "@/contexts/AppContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import AdminRoute from "@/components/AdminRoute";
 import Index from "./pages/Index";
 import DomainsPage from "./pages/DomainsPage";
 import RoadmapsPage from "./pages/RoadmapsPage";
@@ -27,7 +26,6 @@ import MockInterviewPage from "./pages/MockInterviewPage";
 import DashboardPage from "./pages/DashboardPage";
 import DsaArenaPage from "./pages/DsaArenaPage";
 import AptitudePage from "./pages/AptitudePage";
-import AdminPage from "./pages/AdminPage";
 
 import NotFound from "./pages/NotFound";
 
@@ -62,7 +60,6 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
             <Route path="/dsa-arena" element={<ProtectedRoute><DsaArenaPage /></ProtectedRoute>} />
             <Route path="/aptitude" element={<ProtectedRoute><AptitudePage /></ProtectedRoute>} />
-            <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

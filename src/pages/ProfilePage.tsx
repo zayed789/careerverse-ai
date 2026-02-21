@@ -18,8 +18,7 @@ const domainOptions = [
 ];
 
 const ProfilePage = () => {
-  const { user, profile, updateProfile, signOut, userRole } = useAuth();
-  const isAdmin = userRole === 'admin';
+  const { user, profile, updateProfile, signOut } = useAuth();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [skillInput, setSkillInput] = useState('');
@@ -41,24 +40,16 @@ const ProfilePage = () => {
   }
 
   const handleSave = async () => {
-    const updates: Record<string, unknown> = {
+    await updateProfile({
       name: form.name,
+      role: form.role,
       domain: form.domain,
       skills: form.skills,
       experience: form.experience,
       preferred_role: form.preferredRole,
       learning_goals: form.learningGoals,
-    };
-    // Only admins can change role
-    if (isAdmin) {
-      updates.role = form.role;
-    }
-    try {
-      await updateProfile(updates as any);
-      setEditing(false);
-    } catch (err) {
-      console.error('[Profile] Save failed:', err);
-    }
+    });
+    setEditing(false);
   };
 
   const addSkill = () => {
@@ -158,30 +149,19 @@ const ProfilePage = () => {
                     className="w-full px-3 py-2 rounded-lg bg-secondary/50 border border-border/50 text-sm opacity-60"
                   />
                 </div>
-                {isAdmin ? (
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">Role</label>
-                    <select
-                      value={form.role}
-                      onChange={(e) => setForm({ ...form, role: e.target.value })}
-                      disabled={!editing}
-                      className="w-full px-3 py-2 rounded-lg bg-secondary/50 border border-border/50 text-sm disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                    >
-                      {roleOptions.map((r) => (
-                        <option key={r} value={r}>{r}</option>
-                      ))}
-                    </select>
-                  </div>
-                ) : (
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1 block">Role</label>
-                    <input
-                      value={form.role}
-                      disabled
-                      className="w-full px-3 py-2 rounded-lg bg-secondary/50 border border-border/50 text-sm opacity-60"
-                    />
-                  </div>
-                )}
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1 block">Role</label>
+                  <select
+                    value={form.role}
+                    onChange={(e) => setForm({ ...form, role: e.target.value })}
+                    disabled={!editing}
+                    className="w-full px-3 py-2 rounded-lg bg-secondary/50 border border-border/50 text-sm disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  >
+                    {roleOptions.map((r) => (
+                      <option key={r} value={r}>{r}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </motion.div>
 

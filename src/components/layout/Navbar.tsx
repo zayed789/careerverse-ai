@@ -36,7 +36,7 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
     .slice(0, 2);
 
   return (
-    <header className="sticky top-0 z-30 h-16 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 h-16 border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="flex items-center justify-between h-full px-4 lg:px-6">
         {/* Mobile menu button */}
         <button

@@ -16,9 +16,9 @@ const streak = 0;
 const weeklyActiveDays = 0;
 
 const riskColors: Record<string, string> = {
-  Low: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30',
-  Medium: 'text-amber-400 bg-amber-400/10 border-amber-400/30',
-  High: 'text-red-400 bg-red-400/10 border-red-400/30',
+  Low: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
+  Medium: 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/30',
+  High: 'text-red-600 dark:text-red-400 bg-red-500/10 border-red-500/30',
 };
 
 const fadeUp = {
@@ -136,7 +136,7 @@ const DashboardPage = () => {
                 </div>
               </div>
               <div className="glass-card px-4 py-3 text-center">
-                <div className="flex items-center gap-1.5 text-amber-400">
+                <div className="flex items-center gap-1.5 text-amber-500 dark:text-amber-400">
                   <Flame className="w-4 h-4" />
                   <span className="text-lg font-bold">{streak}</span>
                 </div>
@@ -233,7 +233,7 @@ const DashboardPage = () => {
                   <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} domain={[0, 100]} />
                   <Tooltip contentStyle={chartTooltipStyle} />
-                  <Bar dataKey="value" fill="hsl(217 91% 60%)" radius={[4, 4, 0, 0]} opacity={0.8} />
+                  <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} opacity={0.8} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

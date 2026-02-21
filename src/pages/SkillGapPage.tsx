@@ -9,7 +9,7 @@ import { useAppContext } from '@/contexts/AppContext';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
-const SKILL_GAP_WEBHOOK = 'https://testcase6788.app.n8n.cloud/webhook-test/skill-gap';
+const SKILL_GAP_WEBHOOK = 'https://testcase6788.app.n8n.cloud/webhook/skill-gap';
 
 interface SkillGapResult {
   match_score: number;

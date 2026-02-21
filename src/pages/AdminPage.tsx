@@ -29,6 +29,7 @@ interface MetricRow {
   skill_gap_score: number | null;
   interview_score: number | null;
   consistency_score: number | null;
+  readiness_score: number | null;
   updated_at: string;
 }
 
@@ -167,6 +168,7 @@ const AdminPage = () => {
                   <th className="px-4 py-3 text-muted-foreground font-medium">Skill Gap</th>
                   <th className="px-4 py-3 text-muted-foreground font-medium">Interview</th>
                   <th className="px-4 py-3 text-muted-foreground font-medium">Consistency</th>
+                  <th className="px-4 py-3 text-muted-foreground font-medium">Readiness</th>
                   <th className="px-4 py-3 text-muted-foreground font-medium">Updated</th>
                 </tr>
               </thead>
@@ -186,6 +188,7 @@ const AdminPage = () => {
                     <td className="px-4 py-3">{m.skill_gap_score ?? 0}</td>
                     <td className="px-4 py-3">{m.interview_score ?? 0}</td>
                     <td className="px-4 py-3">{m.consistency_score ?? 0}</td>
+                    <td className="px-4 py-3 font-semibold gradient-text">{m.readiness_score ?? 0}</td>
                     <td className="px-4 py-3 text-muted-foreground text-xs">{new Date(m.updated_at).toLocaleDateString()}</td>
                   </tr>
                 ))}

@@ -2,7 +2,6 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileText, CheckCircle2, AlertTriangle, Lightbulb, XCircle, X, Loader2, BarChart3, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
 
 const ATS_WEBHOOK_URL = 'https://testcase6788.app.n8n.cloud/webhook-test/resume-ats';
@@ -97,7 +96,6 @@ const AtsSection = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [atsResult, setAtsResult] = useState<AtsWebhookResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [previewOpen, setPreviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -239,12 +237,18 @@ const AtsSection = () => {
         </div>
       )}
       {uploadedFile && previewUrl && (
-        <div className="mt-4 rounded-xl border border-border/40 shadow-[0_0_15px_hsl(var(--primary)/0.15)] overflow-hidden">
-          <iframe
-            src={previewUrl}
-            className="w-full h-[300px] rounded-xl bg-secondary/10"
-            title="Resume Preview"
-          />
+        <div className="mt-4 rounded-xl border border-border/40 shadow-[0_0_15px_hsl(var(--primary)/0.15)] p-5 flex flex-col items-center gap-3 bg-secondary/10">
+          <FileText className="w-8 h-8 text-primary" />
+          <p className="text-sm text-foreground/80 truncate max-w-full">{uploadedFile.name}</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.open(previewUrl, '_blank')}
+            className="gap-2"
+          >
+            <Eye className="w-4 h-4" />
+            Open PDF Preview
+          </Button>
         </div>
       )}
 
@@ -263,7 +267,7 @@ const AtsSection = () => {
           <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30">
             <FileText className="w-4 h-4 text-primary" />
             <span className="text-sm flex-1 truncate">{uploadedFile.name}</span>
-            <button onClick={() => setPreviewOpen(true)} className="text-muted-foreground hover:text-foreground transition-colors" title="Preview file">
+            <button onClick={() => previewUrl && window.open(previewUrl, '_blank')} className="text-muted-foreground hover:text-foreground transition-colors" title="Preview file">
               <Eye className="w-4 h-4" />
             </button>
             <button onClick={clearUpload} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -290,7 +294,7 @@ const AtsSection = () => {
             <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 border border-border/30">
               <FileText className="w-4 h-4 text-primary" />
               <span className="text-sm flex-1 truncate">{uploadedFile.name}</span>
-              <button onClick={() => setPreviewOpen(true)} className="text-muted-foreground hover:text-foreground transition-colors" title="Preview file">
+              <button onClick={() => previewUrl && window.open(previewUrl, '_blank')} className="text-muted-foreground hover:text-foreground transition-colors" title="Preview file">
                 <Eye className="w-4 h-4" />
               </button>
               <button onClick={clearUpload} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -373,26 +377,8 @@ const AtsSection = () => {
         )}
       </AnimatePresence>
 
-      {/* ── PDF Preview Dialog ── */}
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-4xl h-[85vh] p-0 gap-0">
-          <DialogHeader className="p-4 pb-2">
-            <DialogTitle className="flex items-center gap-2 text-sm">
-              <FileText className="w-4 h-4 text-primary" />
-              {uploadedFile?.name}
-            </DialogTitle>
-          </DialogHeader>
-          {previewUrl ? (
-            <iframe
-              src={previewUrl}
-              className="w-full flex-1 border-t border-border rounded-b-lg"
-              title="Resume Preview"
-            />
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-8">Upload a PDF resume to preview</p>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* PDF Preview Dialog removed — Chrome blocks blob URLs in iframes/objects.
+          Preview is handled via "Open PDF Preview" button using window.open(). */}
     </motion.div>
   );
 };

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Mic, Send, Loader2, ChevronRight, ClipboardCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '@/components/layout/Layout';
@@ -16,6 +16,8 @@ import RoundIndicator from '@/components/mock-interview/RoundIndicator';
 import ScreeningResultModal from '@/components/mock-interview/ScreeningResultModal';
 import type { ScreeningResult } from '@/components/mock-interview/ScreeningResultCard';
 import type { InterviewRound, InterviewQuestion } from '@/components/mock-interview/types';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 const AUDIO_WEBHOOK_URL = 'https://testcase6788.app.n8n.cloud/webhook-test/audio-to-text';
 const SCREENING_EVALUATE_URL = 'https://testcase6788.app.n8n.cloud/webhook-test/screening_evaluate';
@@ -27,7 +29,25 @@ function generateSessionId(): string {
 const MockInterviewPage = () => {
   const { toast } = useToast();
   const { updateScore } = useAppContext();
+  const { user } = useAuth();
   const [started, setStarted] = useState(false);
+  const [previousInterviewScore, setPreviousInterviewScore] = useState<number | null>(null);
+
+  // Hydrate previous interview data
+  useEffect(() => {
+    if (!user) return;
+    const hydrate = async () => {
+      const { data } = await supabase
+        .from('user_metrics')
+        .select('interview_score, interview_feedback, interview_round_data')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (data && typeof data.interview_score === 'number' && data.interview_score > 0) {
+        setPreviousInterviewScore(data.interview_score);
+      }
+    };
+    hydrate();
+  }, [user]);
   const [isStarting, setIsStarting] = useState(false);
   const [candidateName, setCandidateName] = useState('');
   const [targetRole, setTargetRole] = useState('');
@@ -187,6 +207,22 @@ const MockInterviewPage = () => {
       setScreeningResult(result);
       // Update interview score in database
       updateScore('interview', result.overall_score);
+
+      // Persist full interview results to DB
+      if (user) {
+        await supabase
+          .from('user_metrics')
+          .update({
+            interview_score: result.overall_score,
+            interview_feedback: result.reasoning || '',
+            interview_round_data: {
+              strengths: result.strengths,
+              weaknesses: result.weaknesses,
+              passed: result.passed,
+            },
+          } as any)
+          .eq('user_id', user.id);
+      }
     } catch (error) {
       console.error('Screening evaluate error:', error);
       toast({

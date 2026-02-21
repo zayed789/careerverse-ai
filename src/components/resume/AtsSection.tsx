@@ -4,6 +4,8 @@ import { Upload, FileText, CheckCircle2, AlertTriangle, Lightbulb, XCircle, X, L
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/AppContext';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 const ATS_WEBHOOK_URL = 'https://testcase6788.app.n8n.cloud/webhook-test/resume-ats';
 
@@ -93,6 +95,7 @@ const ScoreRing = ({ score }: { score: number }) => {
 
 const AtsSection = () => {
   const { updateScore } = useAppContext();
+  const { user } = useAuth();
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -100,6 +103,31 @@ const AtsSection = () => {
   const [error, setError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Hydrate previous ATS results from DB
+  useEffect(() => {
+    if (!user) return;
+    const hydrate = async () => {
+      const { data } = await supabase
+        .from('user_metrics')
+        .select('ats_score, ats_feedback, ats_feedback_summary, keyword_match_percentage')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (data && typeof data.ats_score === 'number' && data.ats_score > 0) {
+        const feedback = Array.isArray((data as any).ats_feedback) ? (data as any).ats_feedback : null;
+        if (feedback) {
+          setAtsResult({
+            ats_score: data.ats_score,
+            strengths: feedback.filter((f: any) => f.type === 'strength').map((f: any) => f.text),
+            missing_keywords: feedback.filter((f: any) => f.type === 'missing').map((f: any) => f.text),
+            formatting_issues: feedback.filter((f: any) => f.type === 'formatting').map((f: any) => f.text),
+            suggestions: feedback.filter((f: any) => f.type === 'suggestion').map((f: any) => f.text),
+          });
+        }
+      }
+    };
+    hydrate();
+  }, [user]);
 
   // Cleanup object URL on unmount or when previewUrl changes
   useEffect(() => {
@@ -134,6 +162,24 @@ const AtsSection = () => {
       }
       setAtsResult(data);
       updateScore('ats', data.ats_score);
+
+      // Persist full ATS results to DB
+      if (user) {
+        const feedbackItems = [
+          ...(data.strengths || []).map((t: string) => ({ type: 'strength', text: t })),
+          ...(data.missing_keywords || []).map((t: string) => ({ type: 'missing', text: t })),
+          ...(data.formatting_issues || []).map((t: string) => ({ type: 'formatting', text: t })),
+          ...(data.suggestions || []).map((t: string) => ({ type: 'suggestion', text: t })),
+        ];
+        await supabase
+          .from('user_metrics')
+          .update({
+            ats_score: data.ats_score,
+            ats_feedback: feedbackItems,
+            ats_feedback_summary: (data.suggestions || []).join('; '),
+          } as any)
+          .eq('user_id', user.id);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Analysis failed';
       setError(message);

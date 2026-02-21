@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart3, CheckCircle2, XCircle, AlertCircle, Sparkles } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import { useAppContext } from '@/contexts/AppContext';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 const SKILL_GAP_WEBHOOK = 'https://testcase6788.app.n8n.cloud/webhook-test/skill-gap';
 
@@ -19,10 +21,35 @@ interface SkillGapResult {
 
 const SkillGapPage = () => {
   const { updateScore } = useAppContext();
+  const { user } = useAuth();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<SkillGapResult | null>(null);
   const [jobDescription, setJobDescription] = useState('');
   const [userSkills, setUserSkills] = useState('');
+  const [hydrated, setHydrated] = useState(false);
+
+  // Hydrate previous results from DB on mount
+  useEffect(() => {
+    if (!user) return;
+    const hydrate = async () => {
+      const { data } = await supabase
+        .from('user_metrics')
+        .select('skill_gap_score, skill_gap_matched_skills, skill_gap_missing_skills, skill_gap_recommendations, skill_gap_match_label')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (data && typeof data.skill_gap_score === 'number' && data.skill_gap_score > 0) {
+        setResults({
+          match_score: data.skill_gap_score,
+          match_label: (data as any).skill_gap_match_label || '',
+          matched_skills: Array.isArray((data as any).skill_gap_matched_skills) ? (data as any).skill_gap_matched_skills : [],
+          missing_skills: Array.isArray((data as any).skill_gap_missing_skills) ? (data as any).skill_gap_missing_skills : [],
+          recommendations: Array.isArray((data as any).skill_gap_recommendations) ? (data as any).skill_gap_recommendations : [],
+        });
+      }
+      setHydrated(true);
+    };
+    hydrate();
+  }, [user]);
 
   const isFormValid = jobDescription.trim() !== '' && userSkills.trim() !== '';
 
@@ -52,6 +79,20 @@ const SkillGapPage = () => {
 
       setResults(data);
       updateScore('skillGap', data.match_score);
+
+      // Persist full results to DB
+      if (user) {
+        await supabase
+          .from('user_metrics')
+          .update({
+            skill_gap_score: data.match_score,
+            skill_gap_matched_skills: data.matched_skills || [],
+            skill_gap_missing_skills: data.missing_skills || [],
+            skill_gap_recommendations: data.recommendations || [],
+            skill_gap_match_label: data.match_label || '',
+          } as any)
+          .eq('user_id', user.id);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Analysis failed';
       toast({ title: 'Skill Gap Analysis Error', description: message, variant: 'destructive' });

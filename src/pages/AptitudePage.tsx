@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { useAppContext } from '@/contexts/AppContext';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -92,14 +93,26 @@ const AptitudePage = () => {
   const [results, setResults] = useState<Results | null>(null);
   const [bestScore, setBestScore] = useState<number | null>(null);
   const [lastScore, setLastScore] = useState<number | null>(null);
+  const [previousResults, setPreviousResults] = useState<Results | null>(null);
 
-  // Load scores from context (which fetches from DB)
+  // Hydrate from DB on mount
   useEffect(() => {
-    if (scores.aptitude > 0) {
-      setBestScore(prev => prev === null ? scores.aptitude : Math.max(prev, scores.aptitude));
-      setLastScore(scores.aptitude);
-    }
-  }, [scores.aptitude]);
+    if (!user) return;
+    const hydrate = async () => {
+      const { data } = await supabase
+        .from('user_metrics')
+        .select('aptitude_score, aptitude_last_attempt_score, aptitude_answers')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (data) {
+        const best = typeof data.aptitude_score === 'number' ? data.aptitude_score : 0;
+        const last = typeof (data as any).aptitude_last_attempt_score === 'number' ? (data as any).aptitude_last_attempt_score : 0;
+        if (best > 0) setBestScore(best);
+        if (last > 0) setLastScore(last);
+      }
+    };
+    hydrate();
+  }, [user]);
 
   // Timer
   useEffect(() => {
@@ -229,10 +242,20 @@ const AptitudePage = () => {
     setResults(finalResults);
     updateScore('aptitude', overallScore);
 
-    // Persist
+    // Persist to DB
     setLastScore(overallScore);
-    if (!bestScore || overallScore > bestScore) {
-      setBestScore(overallScore);
+    const newBest = (!bestScore || overallScore > bestScore) ? overallScore : bestScore;
+    if (overallScore > (bestScore || 0)) setBestScore(overallScore);
+
+    if (user) {
+      await supabase
+        .from('user_metrics')
+        .update({
+          aptitude_score: newBest,
+          aptitude_last_attempt_score: overallScore,
+          aptitude_answers: answers,
+        } as any)
+        .eq('user_id', user.id);
     }
 
     setPhase('results');

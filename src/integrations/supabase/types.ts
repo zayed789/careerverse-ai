@@ -64,42 +64,78 @@ export type Database = {
       }
       user_metrics: {
         Row: {
+          aptitude_answers: Json | null
+          aptitude_last_attempt_score: number | null
           aptitude_score: number | null
+          ats_feedback: Json | null
+          ats_feedback_summary: string | null
           ats_score: number | null
           consistency_score: number | null
           created_at: string
           dsa_score: number | null
           id: string
+          interview_feedback: string | null
+          interview_round_data: Json | null
           interview_score: number | null
+          keyword_match_percentage: number | null
           readiness_score: number | null
+          skill_gap_analysis_summary: string | null
+          skill_gap_match_label: string | null
+          skill_gap_matched_skills: Json | null
+          skill_gap_missing_skills: Json | null
+          skill_gap_recommendations: Json | null
           skill_gap_score: number | null
           solved_problems: Json | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          aptitude_answers?: Json | null
+          aptitude_last_attempt_score?: number | null
           aptitude_score?: number | null
+          ats_feedback?: Json | null
+          ats_feedback_summary?: string | null
           ats_score?: number | null
           consistency_score?: number | null
           created_at?: string
           dsa_score?: number | null
           id?: string
+          interview_feedback?: string | null
+          interview_round_data?: Json | null
           interview_score?: number | null
+          keyword_match_percentage?: number | null
           readiness_score?: number | null
+          skill_gap_analysis_summary?: string | null
+          skill_gap_match_label?: string | null
+          skill_gap_matched_skills?: Json | null
+          skill_gap_missing_skills?: Json | null
+          skill_gap_recommendations?: Json | null
           skill_gap_score?: number | null
           solved_problems?: Json | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          aptitude_answers?: Json | null
+          aptitude_last_attempt_score?: number | null
           aptitude_score?: number | null
+          ats_feedback?: Json | null
+          ats_feedback_summary?: string | null
           ats_score?: number | null
           consistency_score?: number | null
           created_at?: string
           dsa_score?: number | null
           id?: string
+          interview_feedback?: string | null
+          interview_round_data?: Json | null
           interview_score?: number | null
+          keyword_match_percentage?: number | null
           readiness_score?: number | null
+          skill_gap_analysis_summary?: string | null
+          skill_gap_match_label?: string | null
+          skill_gap_matched_skills?: Json | null
+          skill_gap_missing_skills?: Json | null
+          skill_gap_recommendations?: Json | null
           skill_gap_score?: number | null
           solved_problems?: Json | null
           updated_at?: string

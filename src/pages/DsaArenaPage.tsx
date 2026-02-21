@@ -2,7 +2,8 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Layout from '@/components/layout/Layout';
 import { useAppContext } from '@/contexts/AppContext';
-
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import {
   Accordion,
@@ -248,29 +249,41 @@ const ProblemCard = ({
   );
 };
 
-const DSA_SOLVED_KEY = 'careerverse_dsa_solved';
-
-const loadSolvedMap = (): SolvedMap => {
-  try {
-    const raw = localStorage.getItem(DSA_SOLVED_KEY);
-    if (!raw) return {};
-    return JSON.parse(raw);
-  } catch {
-    return {};
-  }
-};
-
 const DsaArenaPage = () => {
   const { updateScore } = useAppContext();
-  const [solvedMap, setSolvedMap] = useState<SolvedMap>(loadSolvedMap);
+  const { user } = useAuth();
+  const [solvedMap, setSolvedMap] = useState<SolvedMap>({});
+
+  // Load solved problems from database on mount
+  useEffect(() => {
+    if (!user) return;
+    const load = async () => {
+      const { data } = await supabase
+        .from('user_metrics')
+        .select('solved_problems')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (data?.solved_problems && typeof data.solved_problems === 'object') {
+        setSolvedMap(data.solved_problems as unknown as SolvedMap);
+      }
+    };
+    load();
+  }, [user]);
 
   const handleSolved = useCallback((problemId: string, score: number, result: EvalResult) => {
     setSolvedMap(prev => {
       const next = { ...prev, [problemId]: { score, result } };
-      localStorage.setItem(DSA_SOLVED_KEY, JSON.stringify(next));
+      // Persist to database
+      if (user) {
+        supabase
+          .from('user_metrics')
+          .update({ solved_problems: next as any })
+          .eq('user_id', user.id)
+          .then();
+      }
       return next;
     });
-  }, []);
+  }, [user]);
 
   // Recalculate DSA score whenever solvedMap changes
   const { earned, total, dsaPercent } = useMemo(() => {

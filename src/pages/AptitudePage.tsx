@@ -90,14 +90,16 @@ const AptitudePage = () => {
   const [flagged, setFlagged] = useState<boolean[]>(Array(10).fill(false));
   const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
   const [results, setResults] = useState<Results | null>(null);
-  const [bestScore, setBestScore] = useState<number | null>(() => {
-    const stored = localStorage.getItem('cv_aptitude_best');
-    return stored ? Number(stored) : null;
-  });
-  const [lastScore, setLastScore] = useState<number | null>(() => {
-    const stored = localStorage.getItem('cv_aptitude_last');
-    return stored ? Number(stored) : null;
-  });
+  const [bestScore, setBestScore] = useState<number | null>(null);
+  const [lastScore, setLastScore] = useState<number | null>(null);
+
+  // Load scores from context (which fetches from DB)
+  useEffect(() => {
+    if (scores.aptitude > 0) {
+      setBestScore(prev => prev === null ? scores.aptitude : Math.max(prev, scores.aptitude));
+      setLastScore(scores.aptitude);
+    }
+  }, [scores.aptitude]);
 
   // Timer
   useEffect(() => {
@@ -229,10 +231,8 @@ const AptitudePage = () => {
 
     // Persist
     setLastScore(overallScore);
-    localStorage.setItem('cv_aptitude_last', String(overallScore));
     if (!bestScore || overallScore > bestScore) {
       setBestScore(overallScore);
-      localStorage.setItem('cv_aptitude_best', String(overallScore));
     }
 
     setPhase('results');

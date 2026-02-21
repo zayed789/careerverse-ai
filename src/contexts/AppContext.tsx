@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, useEffect, type ReactNode } from 'react';
 
 interface Scores {
   dsa: number;
@@ -15,13 +15,33 @@ interface AppContextType {
   readiness: number;
 }
 
+const STORAGE_KEY = 'careerverse_metrics';
+
 const defaultScores: Scores = {
-  dsa: 70,
-  aptitude: 74,
-  ats: 82,
-  skillGap: 65,
-  interview: 74,
-  consistency: 80,
+  dsa: 0,
+  aptitude: 0,
+  ats: 0,
+  skillGap: 0,
+  interview: 0,
+  consistency: 0,
+};
+
+const loadScores = (): Scores => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultScores;
+    const parsed = JSON.parse(raw);
+    return {
+      dsa: typeof parsed.dsa === 'number' ? parsed.dsa : 0,
+      aptitude: typeof parsed.aptitude === 'number' ? parsed.aptitude : 0,
+      ats: typeof parsed.ats === 'number' ? parsed.ats : 0,
+      skillGap: typeof parsed.skillGap === 'number' ? parsed.skillGap : 0,
+      interview: typeof parsed.interview === 'number' ? parsed.interview : 0,
+      consistency: typeof parsed.consistency === 'number' ? parsed.consistency : 0,
+    };
+  } catch {
+    return defaultScores;
+  }
 };
 
 const calcReadiness = (s: Scores) =>
@@ -45,11 +65,20 @@ export const useAppContext = () => {
 };
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [scores, setScores] = useState<Scores>(defaultScores);
+  const [scores, setScores] = useState<Scores>(loadScores);
 
   const updateScore = useCallback((key: keyof Scores, value: number) => {
-    setScores((prev) => ({ ...prev, [key]: value }));
+    setScores((prev) => {
+      const next = { ...prev, [key]: value };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
   }, []);
+
+  // Persist on every change (covers hydration edge cases)
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
+  }, [scores]);
 
   const readiness = useMemo(() => calcReadiness(scores), [scores]);
 

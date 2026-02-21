@@ -248,12 +248,28 @@ const ProblemCard = ({
   );
 };
 
+const DSA_SOLVED_KEY = 'careerverse_dsa_solved';
+
+const loadSolvedMap = (): SolvedMap => {
+  try {
+    const raw = localStorage.getItem(DSA_SOLVED_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+};
+
 const DsaArenaPage = () => {
   const { updateScore } = useAppContext();
-  const [solvedMap, setSolvedMap] = useState<SolvedMap>({});
+  const [solvedMap, setSolvedMap] = useState<SolvedMap>(loadSolvedMap);
 
   const handleSolved = useCallback((problemId: string, score: number, result: EvalResult) => {
-    setSolvedMap(prev => ({ ...prev, [problemId]: { score, result } }));
+    setSolvedMap(prev => {
+      const next = { ...prev, [problemId]: { score, result } };
+      localStorage.setItem(DSA_SOLVED_KEY, JSON.stringify(next));
+      return next;
+    });
   }, []);
 
   // Recalculate DSA score whenever solvedMap changes

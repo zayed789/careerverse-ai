@@ -26,7 +26,6 @@ interface Problem {
 }
 
 const problems: Problem[] = [
-  // Easy
   {
     id: 'easy-1',
     title: 'Two Sum',
@@ -37,25 +36,6 @@ const problems: Problem[] = [
     difficulty: 'easy',
   },
   {
-    id: 'easy-2',
-    title: 'Reverse String',
-    description: 'Write a function that reverses a string. The input string is given as an array of characters.',
-    constraints: ['1 ≤ s.length ≤ 10⁵', 'Must be done in-place with O(1) extra memory.'],
-    exampleInput: 's = ["h","e","l","l","o"]',
-    exampleOutput: '["o","l","l","e","h"]',
-    difficulty: 'easy',
-  },
-  {
-    id: 'easy-3',
-    title: 'Valid Parentheses',
-    description: 'Given a string s containing just the characters \'(\', \')\', \'{\', \'}\', \'[\' and \']\', determine if the input string is valid.',
-    constraints: ['1 ≤ s.length ≤ 10⁴', 's consists of parentheses only \'()[]{}\''],
-    exampleInput: 's = "([])"',
-    exampleOutput: 'true',
-    difficulty: 'easy',
-  },
-  // Medium
-  {
     id: 'medium-1',
     title: 'Longest Substring Without Repeating Characters',
     description: 'Given a string s, find the length of the longest substring without repeating characters.',
@@ -65,49 +45,12 @@ const problems: Problem[] = [
     difficulty: 'medium',
   },
   {
-    id: 'medium-2',
-    title: 'Container With Most Water',
-    description: 'Given n non-negative integers a₁, a₂, ..., aₙ where each represents a point at coordinate (i, aᵢ), find two lines that together with the x-axis form a container that holds the most water.',
-    constraints: ['n == height.length', '2 ≤ n ≤ 10⁵', '0 ≤ height[i] ≤ 10⁴'],
-    exampleInput: 'height = [1,8,6,2,5,4,8,3,7]',
-    exampleOutput: '49',
-    difficulty: 'medium',
-  },
-  {
-    id: 'medium-3',
-    title: '3Sum',
-    description: 'Given an integer array nums, return all the triplets [nums[i], nums[j], nums[k]] such that i ≠ j ≠ k and nums[i] + nums[j] + nums[k] == 0.',
-    constraints: ['3 ≤ nums.length ≤ 3000', '-10⁵ ≤ nums[i] ≤ 10⁵'],
-    exampleInput: 'nums = [-1, 0, 1, 2, -1, -4]',
-    exampleOutput: '[[-1, -1, 2], [-1, 0, 1]]',
-    difficulty: 'medium',
-  },
-  // Hard
-  {
     id: 'hard-1',
     title: 'Merge K Sorted Lists',
     description: 'You are given an array of k linked-lists, each sorted in ascending order. Merge all the linked-lists into one sorted linked-list and return it.',
     constraints: ['k == lists.length', '0 ≤ k ≤ 10⁴', '0 ≤ lists[i].length ≤ 500', '-10⁴ ≤ lists[i][j] ≤ 10⁴'],
     exampleInput: 'lists = [[1,4,5],[1,3,4],[2,6]]',
     exampleOutput: '[1,1,2,3,4,4,5,6]',
-    difficulty: 'hard',
-  },
-  {
-    id: 'hard-2',
-    title: 'Trapping Rain Water',
-    description: 'Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it can trap after raining.',
-    constraints: ['n == height.length', '1 ≤ n ≤ 2 × 10⁴', '0 ≤ height[i] ≤ 10⁵'],
-    exampleInput: 'height = [0,1,0,2,1,0,1,3,2,1,2,1]',
-    exampleOutput: '6',
-    difficulty: 'hard',
-  },
-  {
-    id: 'hard-3',
-    title: 'Minimum Window Substring',
-    description: 'Given two strings s and t, return the minimum window substring of s such that every character in t (including duplicates) is included in the window.',
-    constraints: ['1 ≤ s.length, t.length ≤ 10⁵', 's and t consist of uppercase and lowercase English letters.'],
-    exampleInput: 's = "ADOBECODEBANC", t = "ABC"',
-    exampleOutput: '"BANC"',
     difficulty: 'hard',
   },
 ];

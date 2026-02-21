@@ -102,6 +102,7 @@ const AtsSection = () => {
   const [atsResult, setAtsResult] = useState<AtsWebhookResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [hasAnalysis, setHasAnalysis] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Hydrate previous ATS results from DB
@@ -123,6 +124,7 @@ const AtsSection = () => {
             formatting_issues: feedback.filter((f: any) => f.type === 'formatting').map((f: any) => f.text),
             suggestions: feedback.filter((f: any) => f.type === 'suggestion').map((f: any) => f.text),
           });
+          setHasAnalysis(true);
         }
       }
     };
@@ -161,6 +163,7 @@ const AtsSection = () => {
         throw new Error('Invalid response from ATS analysis');
       }
       setAtsResult(data);
+      setHasAnalysis(true);
       updateScore('ats', data.ats_score);
 
       // Persist full ATS results to DB
@@ -226,6 +229,7 @@ const AtsSection = () => {
     setPreviewUrl(null);
     setUploadedFile(null);
     setAtsResult(null);
+    setHasAnalysis(false);
     setError(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -248,7 +252,7 @@ const AtsSection = () => {
       </h3>
 
       {/* ── Drop zone ── */}
-      {!uploadedFile && !isAnalyzing && (
+      {!uploadedFile && !isAnalyzing && !hasAnalysis && (
         <div
           onDrop={handleDrop}
           onDragOver={handleDragOver}
@@ -280,7 +284,7 @@ const AtsSection = () => {
       )}
 
       {/* ── Inline PDF Preview ── */}
-      {!uploadedFile && !isAnalyzing && (
+      {!uploadedFile && !isAnalyzing && !hasAnalysis && (
         <div className="mt-4 rounded-xl border border-border/30 bg-secondary/10 p-6 text-center">
           <p className="text-sm text-muted-foreground">Upload a PDF resume to preview</p>
         </div>
@@ -332,7 +336,7 @@ const AtsSection = () => {
 
       {/* ── ATS Result ── */}
       <AnimatePresence>
-        {atsResult && uploadedFile && !isAnalyzing && (
+        {atsResult && hasAnalysis && !isAnalyzing && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -340,16 +344,18 @@ const AtsSection = () => {
             className="space-y-6"
           >
             {/* File bar */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 border border-border/30">
-              <FileText className="w-4 h-4 text-primary" />
-              <span className="text-sm flex-1 truncate">{uploadedFile.name}</span>
-              <button onClick={() => previewUrl && window.open(previewUrl, '_blank')} className="text-muted-foreground hover:text-foreground transition-colors" title="Preview file">
-                <Eye className="w-4 h-4" />
-              </button>
-              <button onClick={clearUpload} className="text-muted-foreground hover:text-foreground transition-colors">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+            {uploadedFile && (
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 border border-border/30">
+                <FileText className="w-4 h-4 text-primary" />
+                <span className="text-sm flex-1 truncate">{uploadedFile.name}</span>
+                <button onClick={() => previewUrl && window.open(previewUrl, '_blank')} className="text-muted-foreground hover:text-foreground transition-colors" title="Preview file">
+                  <Eye className="w-4 h-4" />
+                </button>
+                <button onClick={clearUpload} className="text-muted-foreground hover:text-foreground transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
 
             {/* Score ring */}
             <motion.div
@@ -421,6 +427,12 @@ const AtsSection = () => {
                   ))}
                 </div>
               </motion.div>
+            )}
+            {/* Re-analyze button for hydrated results */}
+            {!uploadedFile && (
+              <Button onClick={clearUpload} variant="outline" className="w-full mt-4">
+                Upload New Resume & Re-analyze
+              </Button>
             )}
           </motion.div>
         )}

@@ -71,6 +71,7 @@ export type Database = {
           dsa_score: number | null
           id: string
           interview_score: number | null
+          readiness_score: number | null
           skill_gap_score: number | null
           solved_problems: Json | null
           updated_at: string
@@ -84,6 +85,7 @@ export type Database = {
           dsa_score?: number | null
           id?: string
           interview_score?: number | null
+          readiness_score?: number | null
           skill_gap_score?: number | null
           solved_problems?: Json | null
           updated_at?: string
@@ -97,6 +99,7 @@ export type Database = {
           dsa_score?: number | null
           id?: string
           interview_score?: number | null
+          readiness_score?: number | null
           skill_gap_score?: number | null
           solved_problems?: Json | null
           updated_at?: string

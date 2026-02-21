@@ -8,19 +8,12 @@ import {
 import Layout from '@/components/layout/Layout';
 import { useAppContext } from '@/contexts/AppContext';
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, AreaChart, Area, BarChart, Bar
+  XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, BarChart, Bar
 } from 'recharts';
 
-const weeklyTrend = [
-  { week: 'W1', readiness: 58, dsa: 50, aptitude: 62, goals: 40 },
-  { week: 'W2', readiness: 63, dsa: 58, aptitude: 65, goals: 55 },
-  { week: 'W3', readiness: 68, dsa: 65, aptitude: 70, goals: 65 },
-  { week: 'W4', readiness: 72, dsa: 70, aptitude: 74, goals: 78 },
-];
-
-const streak = 14;
-const weeklyActiveDays = 5;
+const streak = 0;
+const weeklyActiveDays = 0;
 
 const riskColors: Record<string, string> = {
   Low: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30',
@@ -173,8 +166,6 @@ const DashboardPage = () => {
             icon={Brain} title="DSA Performance" delay={0.2}
             onClick={() => navigate('/puzzles')}
             metrics={[
-              { label: 'Problems (this week)', value: 23 },
-              { label: 'Difficulty Split', value: 'E:8 M:12 H:3' },
               { label: 'DSA Score', value: `${scores.dsa}/100`, highlight: true },
             ]}
           />
@@ -182,8 +173,6 @@ const DashboardPage = () => {
             icon={Zap} title="Aptitude Performance" delay={0.25}
             onClick={() => navigate('/quiz')}
             metrics={[
-              { label: 'Mock Score Avg', value: '74%' },
-              { label: 'Accuracy', value: '81%' },
               { label: 'Aptitude Score', value: `${scores.aptitude}/100`, highlight: true },
             ]}
           />
@@ -192,7 +181,6 @@ const DashboardPage = () => {
             onClick={() => navigate('/resume-builder')}
             metrics={[
               { label: 'ATS Score', value: `${scores.ats}/100`, highlight: true },
-              { label: 'Keyword Match', value: '76%' },
             ]}
           />
           <MetricCard
@@ -200,16 +188,13 @@ const DashboardPage = () => {
             onClick={() => navigate('/skill-gap')}
             metrics={[
               { label: 'Alignment Score', value: `${scores.skillGap}/100`, highlight: true },
-              { label: 'Missing Critical Skills', value: 3 },
             ]}
           />
           <MetricCard
             icon={Mic} title="Interview Performance" delay={0.4}
             onClick={() => navigate('/mock-interview')}
             metrics={[
-              { label: 'Screening Score', value: '78%' },
-              { label: 'Technical Score', value: '70%' },
-              { label: 'Overall Score', value: `${scores.interview}/100`, highlight: true },
+              { label: 'Interview Score', value: `${scores.interview}/100`, highlight: true },
             ]}
           />
           <MetricCard
@@ -233,66 +218,22 @@ const DashboardPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
           <motion.div {...fadeUp} transition={{ delay: 0.55 }} className="glass-card p-5">
-            <h3 className="text-sm font-semibold mb-4">Readiness Score Trend</h3>
+            <h3 className="text-sm font-semibold mb-4">Current Scores Overview</h3>
             <div className="h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={weeklyTrend}>
-                  <defs>
-                    <linearGradient id="readinessFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(217 91% 60%)" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="hsl(217 91% 60%)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
+                <BarChart data={[
+                  { name: 'DSA', value: scores.dsa },
+                  { name: 'Aptitude', value: scores.aptitude },
+                  { name: 'ATS', value: scores.ats },
+                  { name: 'Skill Gap', value: scores.skillGap },
+                  { name: 'Interview', value: scores.interview },
+                  { name: 'Consistency', value: scores.consistency },
+                ]}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} domain={[0, 100]} />
                   <Tooltip contentStyle={chartTooltipStyle} />
-                  <Area type="monotone" dataKey="readiness" stroke="hsl(217 91% 60%)" strokeWidth={2} fill="url(#readinessFill)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
-
-          <motion.div {...fadeUp} transition={{ delay: 0.6 }} className="glass-card p-5">
-            <h3 className="text-sm font-semibold mb-4">DSA Trend</h3>
-            <div className="h-[220px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={weeklyTrend}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} domain={[0, 100]} />
-                  <Tooltip contentStyle={chartTooltipStyle} />
-                  <Line type="monotone" dataKey="dsa" stroke="hsl(263 70% 50%)" strokeWidth={2} dot={{ fill: 'hsl(263 70% 50%)' }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
-
-          <motion.div {...fadeUp} transition={{ delay: 0.65 }} className="glass-card p-5">
-            <h3 className="text-sm font-semibold mb-4">Aptitude Trend</h3>
-            <div className="h-[220px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={weeklyTrend}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} domain={[0, 100]} />
-                  <Tooltip contentStyle={chartTooltipStyle} />
-                  <Line type="monotone" dataKey="aptitude" stroke="hsl(150 60% 50%)" strokeWidth={2} dot={{ fill: 'hsl(150 60% 50%)' }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
-
-          <motion.div {...fadeUp} transition={{ delay: 0.7 }} className="glass-card p-5">
-            <h3 className="text-sm font-semibold mb-4">Goal Completion %</h3>
-            <div className="h-[220px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weeklyTrend}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={11} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} domain={[0, 100]} />
-                  <Tooltip contentStyle={chartTooltipStyle} />
-                  <Bar dataKey="goals" fill="hsl(217 91% 60%)" radius={[4, 4, 0, 0]} opacity={0.8} />
+                  <Bar dataKey="value" fill="hsl(217 91% 60%)" radius={[4, 4, 0, 0]} opacity={0.8} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Mic, Send, Loader2, ChevronRight, ClipboardCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '@/components/layout/Layout';
+import { useAppContext } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,6 +26,7 @@ function generateSessionId(): string {
 
 const MockInterviewPage = () => {
   const { toast } = useToast();
+  const { updateScore } = useAppContext();
   const [started, setStarted] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [candidateName, setCandidateName] = useState('');
@@ -183,6 +185,8 @@ const MockInterviewPage = () => {
       };
 
       setScreeningResult(result);
+      // Update interview score in database
+      updateScore('interview', result.overall_score);
     } catch (error) {
       console.error('Screening evaluate error:', error);
       toast({

@@ -1,5 +1,6 @@
+import { forwardRef } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Linkedin, Github, ExternalLink } from 'lucide-react';
+import { FileText, Linkedin, Github } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { ResumeData } from './types';
 
@@ -10,7 +11,7 @@ interface ResumePreviewProps {
 /* helper: true when at least one field in an object has content */
 const hasContent = (...vals: string[]) => vals.some((v) => v.trim().length > 0);
 
-const ResumePreview = ({ data }: ResumePreviewProps) => {
+const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(({ data }, ref) => {
   const fullName =
     [data.firstName, data.lastName].filter(Boolean).join(' ') || 'Your Name';
   const contactParts = [data.email, data.phone].filter(Boolean);
@@ -44,6 +45,7 @@ const ResumePreview = ({ data }: ResumePreviewProps) => {
       <div className="flex justify-center">
         <ScrollArea className="h-[680px] w-full max-w-[480px]">
           <div
+            ref={ref}
             className="bg-white text-gray-900 shadow-2xl mx-auto"
             style={{
               width: '480px',
@@ -57,15 +59,11 @@ const ResumePreview = ({ data }: ResumePreviewProps) => {
               <h2 className="text-2xl font-bold text-gray-900 tracking-wide">
                 {fullName}
               </h2>
-
-              {/* Contact line */}
               {contactParts.length > 0 && (
                 <p className="text-gray-600 text-xs mt-1.5">
                   {contactParts.join(' • ')}
                 </p>
               )}
-
-              {/* Links */}
               {(data.linkedin || data.github) && (
                 <div className="flex items-center justify-center gap-4 mt-1.5 text-xs text-gray-500">
                   {data.linkedin && (
@@ -126,26 +124,10 @@ const ResumePreview = ({ data }: ResumePreviewProps) => {
                     (proj, i) =>
                       hasContent(proj.title, proj.description) && (
                         <div key={i} className={i > 0 ? 'mt-2' : ''}>
-                          {proj.title && (
-                            <p className="font-semibold text-sm text-gray-900">
-                              {proj.title}
-                            </p>
-                          )}
-                          {proj.description && (
-                            <p className="text-xs text-gray-700 mt-0.5 leading-relaxed whitespace-pre-wrap">
-                              {proj.description}
-                            </p>
-                          )}
-                          {proj.contributions && (
-                            <p className="text-xs text-gray-700 mt-0.5 leading-relaxed whitespace-pre-wrap">
-                              {proj.contributions}
-                            </p>
-                          )}
-                          {proj.tools.length > 0 && (
-                            <p className="text-xs text-gray-500 mt-0.5 italic">
-                              Tech: {proj.tools.join(', ')}
-                            </p>
-                          )}
+                          {proj.title && <p className="font-semibold text-sm text-gray-900">{proj.title}</p>}
+                          {proj.description && <p className="text-xs text-gray-700 mt-0.5 leading-relaxed whitespace-pre-wrap">{proj.description}</p>}
+                          {proj.contributions && <p className="text-xs text-gray-700 mt-0.5 leading-relaxed whitespace-pre-wrap">{proj.contributions}</p>}
+                          {proj.tools.length > 0 && <p className="text-xs text-gray-500 mt-0.5 italic">Tech: {proj.tools.join(', ')}</p>}
                         </div>
                       ),
                   )}
@@ -164,23 +146,11 @@ const ResumePreview = ({ data }: ResumePreviewProps) => {
                       hasContent(exp.jobTitle, exp.organization) && (
                         <div key={i} className={i > 0 ? 'mt-2' : ''}>
                           <div className="flex justify-between items-baseline">
-                            <p className="font-semibold text-sm text-gray-900">
-                              {exp.jobTitle}
-                            </p>
-                            {exp.dateRange && (
-                              <span className="text-xs text-gray-500 shrink-0 ml-2">
-                                {exp.dateRange}
-                              </span>
-                            )}
+                            <p className="font-semibold text-sm text-gray-900">{exp.jobTitle}</p>
+                            {exp.dateRange && <span className="text-xs text-gray-500 shrink-0 ml-2">{exp.dateRange}</span>}
                           </div>
-                          {exp.organization && (
-                            <p className="text-xs text-gray-500">{exp.organization}</p>
-                          )}
-                          {exp.description && (
-                            <p className="text-xs text-gray-700 mt-0.5 leading-relaxed whitespace-pre-wrap">
-                              {exp.description}
-                            </p>
-                          )}
+                          {exp.organization && <p className="text-xs text-gray-500">{exp.organization}</p>}
+                          {exp.description && <p className="text-xs text-gray-700 mt-0.5 leading-relaxed whitespace-pre-wrap">{exp.description}</p>}
                         </div>
                       ),
                   )}
@@ -199,21 +169,11 @@ const ResumePreview = ({ data }: ResumePreviewProps) => {
                       hasContent(ed.degree, ed.institution) && (
                         <div key={i} className={i > 0 ? 'mt-2' : ''}>
                           <div className="flex justify-between items-baseline">
-                            <p className="font-semibold text-sm text-gray-900">
-                              {ed.degree}
-                            </p>
-                            {ed.yearRange && (
-                              <span className="text-xs text-gray-500 shrink-0 ml-2">
-                                {ed.yearRange}
-                              </span>
-                            )}
+                            <p className="font-semibold text-sm text-gray-900">{ed.degree}</p>
+                            {ed.yearRange && <span className="text-xs text-gray-500 shrink-0 ml-2">{ed.yearRange}</span>}
                           </div>
-                          {ed.institution && (
-                            <p className="text-xs text-gray-500">{ed.institution}</p>
-                          )}
-                          {ed.gpa && (
-                            <p className="text-xs text-gray-500">GPA: {ed.gpa}</p>
-                          )}
+                          {ed.institution && <p className="text-xs text-gray-500">{ed.institution}</p>}
+                          {ed.gpa && <p className="text-xs text-gray-500">GPA: {ed.gpa}</p>}
                         </div>
                       ),
                   )}
@@ -234,9 +194,7 @@ const ResumePreview = ({ data }: ResumePreviewProps) => {
                           <span className="font-semibold">{cert.name}</span>
                           {cert.organization && ` — ${cert.organization}`}
                           {cert.credentialId && (
-                            <span className="text-gray-400 ml-1">
-                              (ID: {cert.credentialId})
-                            </span>
+                            <span className="text-gray-400 ml-1">(ID: {cert.credentialId})</span>
                           )}
                         </p>
                       ),
@@ -267,6 +225,8 @@ const ResumePreview = ({ data }: ResumePreviewProps) => {
       </div>
     </motion.div>
   );
-};
+});
+
+ResumePreview.displayName = 'ResumePreview';
 
 export default ResumePreview;

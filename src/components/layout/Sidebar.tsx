@@ -17,6 +17,7 @@ import {
   Zap,
   AudioWaveform,
   LayoutDashboard,
+  Code2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +25,7 @@ const navItems = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/domains', icon: Compass, label: 'Explore Domains' },
+  { path: '/dsa-arena', icon: Code2, label: 'DSA Arena' },
   { path: '/roadmaps', icon: Map, label: 'Roadmaps' },
   { path: '/roadmap-generator', icon: Sparkles, label: 'AI Roadmap Generator' },
   { path: '/courses', icon: BookOpen, label: 'Courses' },

@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, userRole, loading } = useAuth();
 
   if (loading) {
@@ -12,16 +12,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!user) {
-    return <Navigate to="/sign-in" replace />;
-  }
-
-  // Admin users cannot access regular app pages
-  if (userRole === 'admin') {
-    return <Navigate to="/admin" replace />;
-  }
+  if (!user) return <Navigate to="/sign-in" replace />;
+  if (userRole !== 'admin') return <Navigate to="/dashboard" replace />;
 
   return <>{children}</>;
 };
 
-export default ProtectedRoute;
+export default AdminRoute;

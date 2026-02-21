@@ -60,7 +60,7 @@ const HeroSection = () => {
             transition={{ delay: 0.7, duration: 0.8 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <Link to="/domains">
+            <Link to="/dashboard">
               <Button size="lg" className="glow-button text-white border-0 h-12 px-8 text-base">
                 <LayoutDashboard className="w-5 h-5 mr-2" />
                 Go to Dashboard

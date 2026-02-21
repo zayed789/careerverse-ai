@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/collapsible';
 import { Code2, Play, CheckCircle2, XCircle, Loader2, ChevronDown, Clock, HardDrive } from 'lucide-react';
 
-const DSA_WEBHOOK = 'https://testcase6788.app.n8n.cloud/webhook-test/dsa';
+const DSA_WEBHOOK = 'https://testcase6788.app.n8n.cloud/webhook/dsa';
 
 interface Problem {
   id: string;

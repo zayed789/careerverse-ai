@@ -19,8 +19,8 @@ import type { InterviewRound, InterviewQuestion } from '@/components/mock-interv
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
-const AUDIO_WEBHOOK_URL = 'https://testcase6788.app.n8n.cloud/webhook-test/audio-to-text';
-const SCREENING_EVALUATE_URL = 'https://testcase6788.app.n8n.cloud/webhook-test/screening_evaluate';
+const AUDIO_WEBHOOK_URL = 'https://testcase6788.app.n8n.cloud/webhook/audio-to-text';
+const SCREENING_EVALUATE_URL = 'https://testcase6788.app.n8n.cloud/webhook/screening_evaluate';
 
 function generateSessionId(): string {
   return `session-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -82,7 +82,7 @@ const MockInterviewPage = () => {
     const newSessionId = generateSessionId();
 
     try {
-      const response = await fetch('https://testcase6788.app.n8n.cloud/webhook-test/screening', {
+      const response = await fetch('https://testcase6788.app.n8n.cloud/webhook/screening', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

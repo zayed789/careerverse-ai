@@ -207,7 +207,7 @@ const AptitudePage = () => {
     // Try webhook
     try {
       const res = await fetch(
-        'https://testcase6788.app.n8n.cloud/webhook-test/aptitude-evaluation',
+        'https://testcase6788.app.n8n.cloud/webhook/aptitude-evaluation',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

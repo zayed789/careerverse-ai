@@ -7,7 +7,7 @@ import { useAppContext } from '@/contexts/AppContext';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
-const ATS_WEBHOOK_URL = 'https://testcase6788.app.n8n.cloud/webhook-test/resume-ats';
+const ATS_WEBHOOK_URL = 'https://testcase6788.app.n8n.cloud/webhook/resume-ats';
 
 interface AtsWebhookResponse {
   ats_score: number;

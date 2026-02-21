@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Bell, Moon, Sun, User, Menu, LogOut } from 'lucide-react';
+import { Bell, Moon, Sun, User, Menu, LogOut } from 'lucide-react';
+import NavSearch from './NavSearch';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,7 +19,6 @@ interface NavbarProps {
 
 const Navbar = ({ onMenuClick }: NavbarProps) => {
   const { isDark, toggleTheme } = useTheme();
-  const [searchFocused, setSearchFocused] = useState(false);
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -47,22 +46,9 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
         </button>
 
         {/* Search */}
-        <motion.div
-          className="hidden sm:flex items-center flex-1 max-w-md"
-          animate={{ scale: searchFocused ? 1.02 : 1 }}
-          transition={{ duration: 0.2 }}
-        >
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search domains, courses, roadmaps..."
-              className="w-full pl-10 pr-4 py-2 rounded-lg bg-secondary/50 border border-border/50 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all"
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setSearchFocused(false)}
-            />
-          </div>
-        </motion.div>
+        <div className="hidden sm:flex items-center flex-1 max-w-md">
+          <NavSearch />
+        </div>
 
         {/* Actions */}
         <div className="flex items-center gap-2">

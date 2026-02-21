@@ -73,12 +73,15 @@ export type Database = {
           consistency_score: number | null
           created_at: string
           dsa_score: number | null
+          email: string | null
           id: string
           interview_feedback: string | null
           interview_round_data: Json | null
           interview_score: number | null
           keyword_match_percentage: number | null
+          name: string | null
           readiness_score: number | null
+          role: string | null
           skill_gap_analysis_summary: string | null
           skill_gap_match_label: string | null
           skill_gap_matched_skills: Json | null
@@ -99,12 +102,15 @@ export type Database = {
           consistency_score?: number | null
           created_at?: string
           dsa_score?: number | null
+          email?: string | null
           id?: string
           interview_feedback?: string | null
           interview_round_data?: Json | null
           interview_score?: number | null
           keyword_match_percentage?: number | null
+          name?: string | null
           readiness_score?: number | null
+          role?: string | null
           skill_gap_analysis_summary?: string | null
           skill_gap_match_label?: string | null
           skill_gap_matched_skills?: Json | null
@@ -125,12 +131,15 @@ export type Database = {
           consistency_score?: number | null
           created_at?: string
           dsa_score?: number | null
+          email?: string | null
           id?: string
           interview_feedback?: string | null
           interview_round_data?: Json | null
           interview_score?: number | null
           keyword_match_percentage?: number | null
+          name?: string | null
           readiness_score?: number | null
+          role?: string | null
           skill_gap_analysis_summary?: string | null
           skill_gap_match_label?: string | null
           skill_gap_matched_skills?: Json | null

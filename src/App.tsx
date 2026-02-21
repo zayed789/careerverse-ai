@@ -21,6 +21,7 @@ import QuizPage from "./pages/QuizPage";
 import PuzzlesPage from "./pages/PuzzlesPage";
 import JokesPage from "./pages/JokesPage";
 import MockInterviewPage from "./pages/MockInterviewPage";
+import DashboardPage from "./pages/DashboardPage";
 
 import NotFound from "./pages/NotFound";
 
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/puzzles" element={<PuzzlesPage />} />
             <Route path="/jokes" element={<JokesPage />} />
             <Route path="/mock-interview" element={<MockInterviewPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

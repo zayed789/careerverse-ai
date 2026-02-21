@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Layout from '@/components/layout/Layout';
 import { useAppContext } from '@/contexts/AppContext';
-import { useAuth } from '@/hooks/useAuth';
+
 import { toast } from '@/hooks/use-toast';
 import {
   Accordion,
@@ -13,7 +13,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Code2, Play, CheckCircle2, Circle, Loader2 } from 'lucide-react';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import { Code2, Play, CheckCircle2, XCircle, Loader2, ChevronDown, Clock, HardDrive } from 'lucide-react';
+
+const DSA_WEBHOOK = 'https://testcase6788.app.n8n.cloud/webhook-test/dsa';
 
 interface Problem {
   id: string;
@@ -23,6 +30,14 @@ interface Problem {
   exampleInput: string;
   exampleOutput: string;
   difficulty: 'easy' | 'medium' | 'hard';
+}
+
+interface EvalResult {
+  correct: boolean;
+  score: number;
+  feedback: string;
+  time_complexity: string;
+  space_complexity: string;
 }
 
 const problems: Problem[] = [
@@ -56,38 +71,63 @@ const problems: Problem[] = [
 ];
 
 const difficultyConfig = {
-  easy: { label: 'Easy', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
-  medium: { label: 'Medium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
-  hard: { label: 'Hard', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
+  easy: { label: 'Easy', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30', maxPoints: 10 },
+  medium: { label: 'Medium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', maxPoints: 20 },
+  hard: { label: 'Hard', color: 'bg-red-500/20 text-red-400 border-red-500/30', maxPoints: 30 },
 };
 
-const ProblemCard = ({ problem }: { problem: Problem }) => {
+interface SolvedMap {
+  [problemId: string]: { score: number; result: EvalResult };
+}
+
+const ProblemCard = ({
+  problem,
+  solved,
+  onSolved,
+}: {
+  problem: Problem;
+  solved?: { score: number; result: EvalResult };
+  onSolved: (problemId: string, score: number, result: EvalResult) => void;
+}) => {
   const [code, setCode] = useState('// Write your solution here\nfunction solve() {\n  \n}');
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<{ score: number } | null>(null);
-  const { user } = useAuth() as any;
-  const { updateScore } = useAppContext();
+  const [result, setResult] = useState<EvalResult | null>(solved?.result ?? null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const isSolved = !!solved;
+
+  const config = difficultyConfig[problem.difficulty];
 
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      const res = await fetch('https://testcase6788.app.n8n.cloud/webhook-test/dsa-evaluation', {
+      const res = await fetch(DSA_WEBHOOK, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          code,
           problem_id: problem.id,
           difficulty: problem.difficulty,
-          user_id: user?.id || 'anonymous',
+          problem_title: problem.title,
+          problem_description: problem.description,
+          expected_input_format: problem.exampleInput,
+          expected_output_format: problem.exampleOutput,
+          code,
         }),
       });
 
       if (!res.ok) throw new Error('Evaluation failed');
-      const data = await res.json();
-      const score = Array.isArray(data) ? data[0]?.dsa_score ?? 0 : data.dsa_score ?? 0;
-      setResult({ score });
-      updateScore('dsa', score);
-      toast({ title: 'Submitted!', description: `DSA Score: ${score}/100` });
+      const raw = await res.json();
+      const data: EvalResult = Array.isArray(raw) ? raw[0] : raw;
+
+      setResult(data);
+      setReportOpen(true);
+
+      if (data.correct) {
+        const awarded = Math.min(data.score, config.maxPoints);
+        onSolved(problem.id, awarded, data);
+        toast({ title: '✅ Correct Solution!', description: `Score: ${awarded}/${config.maxPoints}` });
+      } else {
+        toast({ title: '❌ Solution Incorrect', description: 'Check the AI feedback below.', variant: 'destructive' });
+      }
     } catch {
       toast({ title: 'Error', description: 'Could not reach evaluation server. Try again later.', variant: 'destructive' });
     } finally {
@@ -95,12 +135,15 @@ const ProblemCard = ({ problem }: { problem: Problem }) => {
     }
   };
 
-  const config = difficultyConfig[problem.difficulty];
-
   return (
     <div className="glass-card p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">{problem.title}</h3>
+        <div className="flex items-center gap-2">
+          {isSolved ? (
+            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+          ) : null}
+          <h3 className="text-lg font-semibold text-foreground">{problem.title}</h3>
+        </div>
         <Badge variant="outline" className={config.color}>{config.label}</Badge>
       </div>
 
@@ -141,27 +184,95 @@ const ProblemCard = ({ problem }: { problem: Problem }) => {
       <div className="flex items-center justify-between">
         <Button onClick={handleSubmit} disabled={submitting} className="glow-button text-primary-foreground border-0">
           {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Play className="w-4 h-4 mr-2" />}
-          {submitting ? 'Evaluating...' : 'Submit'}
+          {submitting ? 'Evaluating with AI…' : 'Submit'}
         </Button>
 
-        {result && (
+        {isSolved && (
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span className="text-sm font-semibold text-foreground">Score: {result.score}/100</span>
+            <span className="text-sm font-semibold text-foreground">Solved — {solved.score}/{config.maxPoints}</span>
           </div>
         )}
       </div>
+
+      {/* AI Evaluation Report */}
+      {result && (
+        <Collapsible open={reportOpen} onOpenChange={setReportOpen}>
+          <CollapsibleTrigger className="flex items-center gap-2 w-full text-left text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors py-2">
+            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${reportOpen ? 'rotate-180' : ''}`} />
+            AI Evaluation Report
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="glass-card p-4 space-y-3 mt-1">
+              {/* Status */}
+              <div className="flex items-center gap-2">
+                {result.correct ? (
+                  <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                    <CheckCircle2 className="w-3 h-3 mr-1" /> Correct
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="bg-red-500/20 text-red-400 border-red-500/30">
+                    <XCircle className="w-3 h-3 mr-1" /> Incorrect
+                  </Badge>
+                )}
+                <span className="text-sm text-foreground font-semibold">Score: {result.score}</span>
+              </div>
+
+              {/* Feedback */}
+              <div>
+                <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Feedback</h5>
+                <p className="text-sm text-foreground">{result.feedback}</p>
+              </div>
+
+              {/* Complexity */}
+              <div className="flex gap-4">
+                <div className="flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">Time:</span>
+                  <span className="text-xs font-mono text-foreground">{result.time_complexity}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <HardDrive className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">Space:</span>
+                  <span className="text-xs font-mono text-foreground">{result.space_complexity}</span>
+                </div>
+              </div>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
     </div>
   );
 };
 
 const DsaArenaPage = () => {
+  const { updateScore } = useAppContext();
+  const [solvedMap, setSolvedMap] = useState<SolvedMap>({});
+
+  const handleSolved = useCallback((problemId: string, score: number, result: EvalResult) => {
+    setSolvedMap(prev => ({ ...prev, [problemId]: { score, result } }));
+  }, []);
+
+  // Recalculate DSA score whenever solvedMap changes
+  const { earned, total, dsaPercent } = useMemo(() => {
+    const totalMax = 60; // 10 + 20 + 30
+    let earned = 0;
+    Object.values(solvedMap).forEach(s => { earned += s.score; });
+    const dsaPercent = Math.round((earned / totalMax) * 100);
+    return { earned, total: totalMax, dsaPercent };
+  }, [solvedMap]);
+
+  // Update global DSA score
+  useEffect(() => {
+    updateScore('dsa', dsaPercent);
+  }, [dsaPercent, updateScore]);
+
+  const completedCount = Object.keys(solvedMap).length;
+  const totalProblems = problems.length;
+
   const easy = problems.filter(p => p.difficulty === 'easy');
   const medium = problems.filter(p => p.difficulty === 'medium');
   const hard = problems.filter(p => p.difficulty === 'hard');
-
-  const completed = 0; // placeholder
-  const total = problems.length;
 
   return (
     <Layout>
@@ -185,8 +296,10 @@ const DsaArenaPage = () => {
           {/* Progress bar */}
           <div className="glass-card p-4 mt-4 flex items-center gap-4">
             <span className="text-sm text-muted-foreground whitespace-nowrap">Progress</span>
-            <Progress value={(completed / total) * 100} className="flex-1 h-2" />
-            <span className="text-sm font-semibold text-foreground">{completed}/{total}</span>
+            <Progress value={(completedCount / totalProblems) * 100} className="flex-1 h-2" />
+            <span className="text-sm font-semibold text-foreground">{completedCount}/{totalProblems}</span>
+            <span className="text-xs text-muted-foreground">|</span>
+            <span className="text-sm font-semibold text-foreground">DSA: {dsaPercent}%</span>
           </div>
         </motion.div>
 
@@ -210,7 +323,14 @@ const DsaArenaPage = () => {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-5 pb-5 space-y-4">
-                  {items.map(p => <ProblemCard key={p.id} problem={p} />)}
+                  {items.map(p => (
+                    <ProblemCard
+                      key={p.id}
+                      problem={p}
+                      solved={solvedMap[p.id]}
+                      onSolved={handleSolved}
+                    />
+                  ))}
                 </AccordionContent>
               </AccordionItem>
             ))}

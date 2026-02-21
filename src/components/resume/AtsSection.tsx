@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileText, CheckCircle2, AlertTriangle, Lightbulb, XCircle, X, Loader2, BarChart3, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import { useAppContext } from '@/contexts/AppContext';
 
 const ATS_WEBHOOK_URL = 'https://testcase6788.app.n8n.cloud/webhook-test/resume-ats';
 
@@ -91,6 +92,7 @@ const ScoreRing = ({ score }: { score: number }) => {
 /* ── Main Component ───────────────────────────────── */
 
 const AtsSection = () => {
+  const { updateScore } = useAppContext();
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -131,6 +133,7 @@ const AtsSection = () => {
         throw new Error('Invalid response from ATS analysis');
       }
       setAtsResult(data);
+      updateScore('ats', data.ats_score);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Analysis failed';
       setError(message);

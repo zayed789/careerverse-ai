@@ -5,6 +5,7 @@ import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
+import { useAppContext } from '@/contexts/AppContext';
 
 const SKILL_GAP_WEBHOOK = 'https://testcase6788.app.n8n.cloud/webhook-test/skill-gap';
 
@@ -17,6 +18,7 @@ interface SkillGapResult {
 }
 
 const SkillGapPage = () => {
+  const { updateScore } = useAppContext();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<SkillGapResult | null>(null);
   const [jobDescription, setJobDescription] = useState('');
@@ -49,6 +51,7 @@ const SkillGapPage = () => {
       }
 
       setResults(data);
+      updateScore('skillGap', data.match_score);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Analysis failed';
       toast({ title: 'Skill Gap Analysis Error', description: message, variant: 'destructive' });

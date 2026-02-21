@@ -12,20 +12,24 @@ const SignInPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
 
   const isValid = email.trim() !== '' && password.trim() !== '';
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (!isValid) return;
+    setLoading(true);
     try {
-      signIn(email, password);
+      await signIn(email, password);
       navigate('/');
-    } catch {
-      setError('Invalid credentials');
+    } catch (err: any) {
+      setError(err?.message || 'Invalid credentials');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -124,11 +128,11 @@ const SignInPage = () => {
 
             <Button
               type="submit"
-              disabled={!isValid}
-              className={`w-full h-11 text-base ${isValid ? 'glow-button text-white border-0' : 'opacity-50 cursor-not-allowed'}`}
+              disabled={!isValid || loading}
+              className={`w-full h-11 text-base ${isValid && !loading ? 'glow-button text-white border-0' : 'opacity-50 cursor-not-allowed'}`}
             >
-              Sign In
-              <ArrowRight className="w-4 h-4 ml-2" />
+              {loading ? 'Signing in...' : 'Sign In'}
+              {!loading && <ArrowRight className="w-4 h-4 ml-2" />}
             </Button>
           </form>
 

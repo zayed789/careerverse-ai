@@ -14,7 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          domain: string | null
+          email: string | null
+          experience: string | null
+          id: string
+          learning_goals: string | null
+          name: string | null
+          preferred_role: string | null
+          role: string | null
+          skills: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          domain?: string | null
+          email?: string | null
+          experience?: string | null
+          id?: string
+          learning_goals?: string | null
+          name?: string | null
+          preferred_role?: string | null
+          role?: string | null
+          skills?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          domain?: string | null
+          email?: string | null
+          experience?: string | null
+          id?: string
+          learning_goals?: string | null
+          name?: string | null
+          preferred_role?: string | null
+          role?: string | null
+          skills?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_metrics: {
+        Row: {
+          aptitude_score: number | null
+          ats_score: number | null
+          consistency_score: number | null
+          created_at: string
+          dsa_score: number | null
+          id: string
+          interview_score: number | null
+          skill_gap_score: number | null
+          solved_problems: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          aptitude_score?: number | null
+          ats_score?: number | null
+          consistency_score?: number | null
+          created_at?: string
+          dsa_score?: number | null
+          id?: string
+          interview_score?: number | null
+          skill_gap_score?: number | null
+          solved_problems?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          aptitude_score?: number | null
+          ats_score?: number | null
+          consistency_score?: number | null
+          created_at?: string
+          dsa_score?: number | null
+          id?: string
+          interview_score?: number | null
+          skill_gap_score?: number | null
+          solved_problems?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

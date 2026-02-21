@@ -18,20 +18,20 @@ const domainOptions = [
 ];
 
 const ProfilePage = () => {
-  const { user, updateProfile, signOut } = useAuth();
+  const { user, profile, updateProfile, signOut } = useAuth();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [skillInput, setSkillInput] = useState('');
 
   const [form, setForm] = useState({
-    name: user?.name || '',
+    name: profile?.name || '',
     email: user?.email || '',
-    role: user?.role || 'Student',
-    domain: user?.domain || '',
-    skills: user?.skills || [],
-    experience: user?.experience || 'Beginner',
-    preferredRole: user?.preferredRole || '',
-    learningGoals: user?.learningGoals || '',
+    role: profile?.role || 'Student',
+    domain: profile?.domain || '',
+    skills: profile?.skills || [],
+    experience: profile?.experience || 'Beginner',
+    preferredRole: profile?.preferred_role || '',
+    learningGoals: profile?.learning_goals || '',
   });
 
   if (!user) {
@@ -39,8 +39,16 @@ const ProfilePage = () => {
     return null;
   }
 
-  const handleSave = () => {
-    updateProfile(form);
+  const handleSave = async () => {
+    await updateProfile({
+      name: form.name,
+      role: form.role,
+      domain: form.domain,
+      skills: form.skills,
+      experience: form.experience,
+      preferred_role: form.preferredRole,
+      learning_goals: form.learningGoals,
+    });
     setEditing(false);
   };
 

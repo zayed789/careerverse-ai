@@ -19,7 +19,7 @@ interface NavbarProps {
 const Navbar = ({ onMenuClick }: NavbarProps) => {
   const [isDark, setIsDark] = useState(true);
   const [searchFocused, setSearchFocused] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
 
   const toggleTheme = () => {
@@ -32,7 +32,7 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
     navigate('/');
   };
 
-  const initials = user?.name
+  const initials = profile?.name
     ?.split(' ')
     .map((n: string) => n[0])
     .join('')
@@ -107,7 +107,7 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 glass-card">
                 <div className="px-3 py-2 border-b border-border/50">
-                  <p className="text-sm font-medium">{user.name}</p>
+                  <p className="text-sm font-medium">{profile?.name || user.email}</p>
                   <p className="text-xs text-muted-foreground">{user.email}</p>
                 </div>
                 <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/profile')}>

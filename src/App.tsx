@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AppProvider } from "@/contexts/AppContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import DomainsPage from "./pages/DomainsPage";
 import RoadmapsPage from "./pages/RoadmapsPage";
@@ -44,21 +45,21 @@ const App = () => (
             <Route path="/roadmaps" element={<RoadmapsPage />} />
             <Route path="/roadmap-generator" element={<RoadmapGeneratorPage />} />
             <Route path="/courses" element={<CoursesPage />} />
-            <Route path="/resume-builder" element={<ResumeBuilderPage />} />
-            <Route path="/skill-gap" element={<SkillGapPage />} />
+            <Route path="/resume-builder" element={<ProtectedRoute><ResumeBuilderPage /></ProtectedRoute>} />
+            <Route path="/skill-gap" element={<ProtectedRoute><SkillGapPage /></ProtectedRoute>} />
             
             <Route path="/planner" element={<PlannerPage />} />
             <Route path="/help" element={<HelpPage />} />
             <Route path="/sign-in" element={<SignInPage />} />
             <Route path="/sign-up" element={<SignUpPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route path="/quiz" element={<QuizPage />} />
             <Route path="/puzzles" element={<PuzzlesPage />} />
             <Route path="/jokes" element={<JokesPage />} />
-            <Route path="/mock-interview" element={<MockInterviewPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/dsa-arena" element={<DsaArenaPage />} />
-            <Route path="/aptitude" element={<AptitudePage />} />
+            <Route path="/mock-interview" element={<ProtectedRoute><MockInterviewPage /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+            <Route path="/dsa-arena" element={<ProtectedRoute><DsaArenaPage /></ProtectedRoute>} />
+            <Route path="/aptitude" element={<ProtectedRoute><AptitudePage /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

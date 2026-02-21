@@ -5,6 +5,7 @@ import { Mail, Lock, Eye, EyeOff, User, Zap, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import Starfield from '@/components/layout/Starfield';
+import { useToast } from '@/hooks/use-toast';
 
 const SignUpPage = () => {
   const [fullName, setFullName] = useState('');
@@ -14,8 +15,10 @@ const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const isValid =
     fullName.trim() !== '' &&
@@ -24,7 +27,7 @@ const SignUpPage = () => {
     confirmPassword.trim() !== '' &&
     password === confirmPassword;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (password !== confirmPassword) {
@@ -32,11 +35,18 @@ const SignUpPage = () => {
       return;
     }
     if (!isValid) return;
+    setLoading(true);
     try {
-      signUp(fullName, email, password);
-      navigate('/');
-    } catch {
-      setError('Something went wrong');
+      await signUp(fullName, email, password);
+      toast({
+        title: 'Account created!',
+        description: 'Please check your email to verify your account before signing in.',
+      });
+      navigate('/sign-in');
+    } catch (err: any) {
+      setError(err?.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -160,11 +170,11 @@ const SignUpPage = () => {
 
             <Button
               type="submit"
-              disabled={!isValid}
-              className={`w-full h-11 text-base mt-2 ${isValid ? 'glow-button text-white border-0' : 'opacity-50 cursor-not-allowed'}`}
+              disabled={!isValid || loading}
+              className={`w-full h-11 text-base mt-2 ${isValid && !loading ? 'glow-button text-white border-0' : 'opacity-50 cursor-not-allowed'}`}
             >
-              Create Account
-              <ArrowRight className="w-4 h-4 ml-2" />
+              {loading ? 'Creating account...' : 'Create Account'}
+              {!loading && <ArrowRight className="w-4 h-4 ml-2" />}
             </Button>
           </form>
 

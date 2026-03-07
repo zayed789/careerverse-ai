@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import { Mic, Send, Loader2, ChevronRight, ClipboardCheck, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Mic, Send, Loader2, ChevronRight, ClipboardCheck, CheckCircle2, AlertTriangle, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '@/components/layout/Layout';
 import { useAppContext } from '@/contexts/AppContext';

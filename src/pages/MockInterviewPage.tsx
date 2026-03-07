@@ -20,7 +20,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
 const AUDIO_WEBHOOK_URL = 'https://roxx5071.app.n8n.cloud/webhook/audio-to-text';
-const SCREENING_EVALUATE_URL = 'https://roxx5071.app.n8n.cloud/webhook/screening_evaluate';
+const SCREENING_EVALUATE_URL = 'https://roxx5071.app.n8n.cloud/webhook-test/screening_evaluate';
 
 function generateSessionId(): string {
   return `session-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;

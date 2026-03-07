@@ -76,8 +76,8 @@ const StudentIntelligenceDashboard = () => {
       .filter((s) =>
         scoreFilters.every((f) => {
           const v = n(s[f.key as keyof StudentRow] as number | null);
-          const [min, max] = ranges[f.key];
-          return v >= min && v <= max;
+          const r = ranges[f.key] ?? [0, 100];
+          return v >= r[0] && v <= r[1];
         })
       )
       .sort((a, b) => {

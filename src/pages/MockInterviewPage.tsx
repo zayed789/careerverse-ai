@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Mic, Send, Loader2, ChevronRight, ClipboardCheck } from 'lucide-react';
+import { Mic, Send, Loader2, ChevronRight, ClipboardCheck, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '@/components/layout/Layout';
 import { useAppContext } from '@/contexts/AppContext';
@@ -48,10 +48,14 @@ const MockInterviewPage = () => {
     };
     hydrate();
   }, [user]);
+
   const [isStarting, setIsStarting] = useState(false);
   const [candidateName, setCandidateName] = useState('');
   const [targetRole, setTargetRole] = useState('');
-  const [isEvaluating, setIsEvaluating] = useState(false);
+
+  // Screening submission state
+  const [isSubmittingScreening, setIsSubmittingScreening] = useState(false);
+  const [screeningSubmitted, setScreeningSubmitted] = useState(false);
 
   // Screening evaluation state
   const [isEvaluatingScreening, setIsEvaluatingScreening] = useState(false);
@@ -62,19 +66,20 @@ const MockInterviewPage = () => {
   const collectedAudiosRef = useRef<Map<string, { blob: Blob; questionText: string }>>(new Map());
   const [hasRecorded, setHasRecorded] = useState(false);
 
+  // Track which questions have a saved recording
+  const [savedQuestions, setSavedQuestions] = useState<Set<string>>(new Set());
+
   // Session & interview progress state
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [currentRound, setCurrentRound] = useState<InterviewRound>('screening');
   const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
-  // Track which questions have been submitted
-  const [submittedQuestions, setSubmittedQuestions] = useState<Set<string>>(new Set());
-
   const currentQuestion = questions.length > 0 ? questions[currentQuestionIndex] : null;
   const isLastQuestion = currentQuestionIndex >= questions.length - 1;
 
   const canBegin = candidateName.trim().length > 0 && targetRole.trim().length > 0;
+  const allQuestionsRecorded = questions.length > 0 && questions.every(q => collectedAudiosRef.current.has(q.id));
 
   const handleBeginInterview = async () => {
     if (!canBegin || isStarting) return;
@@ -136,54 +141,22 @@ const MockInterviewPage = () => {
     setHasRecorded(true);
   };
 
-  const handleSubmit = async () => {
-    if (!audioBlobRef.current || !currentQuestion || !sessionId) return;
+  // Save answer locally for current question
+  const handleSaveAnswer = () => {
+    if (!audioBlobRef.current || !currentQuestion) return;
 
-    // Store the recording locally
     collectedAudiosRef.current.set(currentQuestion.id, {
       blob: audioBlobRef.current,
       questionText: currentQuestion.text,
     });
-    setSubmittedQuestions((prev) => new Set(prev).add(currentQuestion.id));
+    setSavedQuestions((prev) => new Set(prev).add(currentQuestion.id));
 
-    // If this is the last question, send all recordings to the webhook
-    if (isLastQuestion) {
-      setIsEvaluating(true);
-      try {
-        const formData = new FormData();
-        formData.append('session_id', sessionId);
-        formData.append('candidate_name', candidateName.trim());
-        formData.append('target_role', targetRole.trim());
-        formData.append('round', currentRound);
+    toast({
+      title: 'Answer saved',
+      description: `Recording for Question ${currentQuestionIndex + 1} saved successfully.`,
+    });
 
-        let idx = 0;
-        for (const [qId, { blob, questionText }] of collectedAudiosRef.current.entries()) {
-          formData.append(`audio_${idx}`, blob, `recording_${qId}.webm`);
-          formData.append(`question_id_${idx}`, qId);
-          formData.append(`question_text_${idx}`, questionText);
-          idx++;
-        }
-        formData.append('total_questions', String(idx));
-
-        const response = await fetch(AUDIO_WEBHOOK_URL, {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!response.ok) throw new Error(`Webhook returned ${response.status}`);
-      } catch (error) {
-        console.error('Audio webhook error:', error);
-        toast({
-          title: 'Submission failed',
-          description: 'Could not send your recordings. Please try again.',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsEvaluating(false);
-      }
-    }
-
-    // Reset for next question
+    // Reset for next action
     setHasRecorded(false);
     audioBlobRef.current = null;
   };
@@ -194,66 +167,61 @@ const MockInterviewPage = () => {
     audioBlobRef.current = null;
   };
 
+  // Submit all audio to webhook
   const handleSubmitScreening = async () => {
-    if (!sessionId || isEvaluatingScreening) return;
+    if (!sessionId || isSubmittingScreening || screeningSubmitted) return;
 
-    setIsEvaluatingScreening(true);
+    // Validate all questions have recordings
+    const missingQuestions = questions.filter(q => !collectedAudiosRef.current.has(q.id));
+    if (missingQuestions.length > 0) {
+      toast({
+        title: 'Missing answers',
+        description: 'Please record answers for all questions before submitting the screening round.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSubmittingScreening(true);
     try {
-      const response = await fetch(SCREENING_EVALUATE_URL, {
+      const formData = new FormData();
+      formData.append('session_id', sessionId);
+      formData.append('candidate_name', candidateName.trim());
+      formData.append('target_role', targetRole.trim());
+      formData.append('round', currentRound);
+
+      let idx = 0;
+      for (const [qId, { blob, questionText }] of collectedAudiosRef.current.entries()) {
+        formData.append(`audio_${idx}`, blob, `recording_${qId}.webm`);
+        formData.append(`question_id_${idx}`, qId);
+        formData.append(`question_text_${idx}`, questionText);
+        idx++;
+      }
+      formData.append('total_questions', String(idx));
+
+      const response = await fetch(AUDIO_WEBHOOK_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          session_id: sessionId,
-          round: 'screening',
-        }),
+        body: formData,
       });
 
       if (!response.ok) throw new Error(`Webhook returned ${response.status}`);
 
-      const data = await response.json();
-      const payload = Array.isArray(data) ? data[0] : data;
-      const result: ScreeningResult = {
-        overall_score: payload?.overall_score ?? 0,
-        strengths: payload?.strengths ?? [],
-        weaknesses: payload?.weaknesses ?? [],
-        passed: payload?.passed ?? false,
-        reasoning: payload?.reasoning ?? '',
-      };
-
-      setScreeningResult(result);
-      // Update interview score in database
-      updateScore('interview', result.overall_score);
-
-      // Persist full interview results to DB
-      if (user) {
-        await supabase
-          .from('user_metrics')
-          .update({
-            interview_score: result.overall_score,
-            interview_feedback: result.reasoning || '',
-            interview_round_data: {
-              strengths: result.strengths,
-              weaknesses: result.weaknesses,
-              passed: result.passed,
-            },
-          } as any)
-          .eq('user_id', user.id);
-      }
-    } catch (error) {
-      console.error('Screening evaluate error:', error);
+      setScreeningSubmitted(true);
       toast({
-        title: 'Evaluation failed',
-        description: 'Could not evaluate screening round. Please try again.',
+        title: 'Screening round submitted!',
+        description: 'Your responses have been successfully submitted and are being analyzed by the AI interviewer.',
+      });
+    } catch (error) {
+      console.error('Audio webhook error:', error);
+      toast({
+        title: 'Submission failed',
+        description: 'Could not send your recordings. Please try again.',
         variant: 'destructive',
       });
     } finally {
-      setIsEvaluatingScreening(false);
+      setIsSubmittingScreening(false);
     }
   };
-
-  // Derived: show screening submit button on last question after audio submitted
-  const showScreeningSubmit =
-    isLastQuestion && currentQuestion && submittedQuestions.has(currentQuestion.id);
 
   // Key for remounting AudioRecorder on question change
   const recorderKey = currentQuestion?.id || 'no-question';
@@ -319,6 +287,67 @@ const MockInterviewPage = () => {
                 </CardContent>
               </Card>
             </motion.div>
+          ) : screeningSubmitted ? (
+            /* ── Final confirmation screen ── */
+            <motion.div
+              key="submitted"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="flex items-center justify-center min-h-[60vh]"
+            >
+              <Card className="glass-card border-border/30 w-full max-w-2xl">
+                <CardContent className="flex flex-col items-center gap-6 py-12 px-8 text-center">
+                  <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center">
+                    <CheckCircle2 className="w-8 h-8 text-accent" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold gradient-text mb-2">
+                      Screening Round Completed
+                    </h2>
+                    <p className="text-muted-foreground max-w-md mx-auto">
+                      Your responses have been successfully submitted and are being analyzed by the AI interviewer.
+                      Please wait while we generate your evaluation.
+                    </p>
+                  </div>
+
+                  {/* Per-question submission status */}
+                  <div className="w-full space-y-2 mt-4">
+                    {questions.map((q, i) => (
+                      <div key={q.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/20">
+                        <CheckCircle2 className="w-5 h-5 text-accent shrink-0" />
+                        <div className="text-left flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">Question {i + 1}</p>
+                          <p className="text-xs text-muted-foreground truncate">{q.text}</p>
+                        </div>
+                        <span className="text-xs font-medium text-accent whitespace-nowrap">✓ Answer submitted</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Screening result modal */}
+                  {screeningResult && (
+                    <ScreeningResultModal
+                      result={screeningResult}
+                      open={!!screeningResult}
+                      onProceed={() => {
+                        setScreeningResult(null);
+                        setCurrentRound('technical');
+                        setCurrentQuestionIndex(0);
+                        setQuestions([]);
+                        setSavedQuestions(new Set());
+                        setScreeningSubmitted(false);
+                        collectedAudiosRef.current = new Map();
+                        audioBlobRef.current = null;
+                      }}
+                      onRetake={() => {
+                        setScreeningResult(null);
+                      }}
+                    />
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
           ) : (
             <motion.div
               key="interview"
@@ -351,6 +380,25 @@ const MockInterviewPage = () => {
                 <RoundIndicator currentRound={currentRound} />
               </div>
 
+              {/* Progress: saved answers tracker */}
+              <div className="mb-6 flex flex-wrap gap-2">
+                {questions.map((q, i) => (
+                  <div
+                    key={q.id}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      savedQuestions.has(q.id)
+                        ? 'bg-accent/10 border-accent/30 text-accent'
+                        : currentQuestionIndex === i
+                        ? 'bg-primary/10 border-primary/30 text-primary'
+                        : 'bg-muted/30 border-border/20 text-muted-foreground'
+                    }`}
+                  >
+                    {savedQuestions.has(q.id) && <CheckCircle2 className="w-3 h-3" />}
+                    Q{i + 1}
+                  </div>
+                ))}
+              </div>
+
               {/* Two-column layout */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Left panel — Interview flow */}
@@ -371,13 +419,18 @@ const MockInterviewPage = () => {
                         autoPlay={currentQuestionIndex === 0}
                       />
 
-
-
+                      {/* Saved indicator for current question */}
+                      {savedQuestions.has(currentQuestion.id) && (
+                        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-accent/10 border border-accent/30">
+                          <CheckCircle2 className="w-4 h-4 text-accent" />
+                          <span className="text-sm font-medium text-accent">✓ Answer saved for this question</span>
+                        </div>
+                      )}
 
                       <Button
                         variant="outline"
                         className="w-full gap-2 h-11"
-                        disabled={isLastQuestion || isEvaluating}
+                        disabled={isLastQuestion}
                         onClick={handleNextQuestion}
                       >
                         Next Question
@@ -389,41 +442,42 @@ const MockInterviewPage = () => {
                   <AudioRecorder
                     key={recorderKey}
                     onRecordingComplete={handleRecordingComplete}
-                    isEvaluating={isEvaluating}
+                    isEvaluating={isSubmittingScreening}
                   />
 
-                  {/* Submit button */}
+                  {/* Save answer button (local only) */}
                   <Button
-                    disabled={!hasRecorded || isEvaluating}
+                    disabled={!hasRecorded || isSubmittingScreening}
                     className="w-full gap-2 h-12 text-base"
                     size="lg"
-                    onClick={handleSubmit}
+                    onClick={handleSaveAnswer}
                   >
-                    {isEvaluating ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Evaluating…
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4" />
-                        Submit Audio Answer
-                      </>
-                    )}
-                   </Button>
+                    <Send className="w-4 h-4" />
+                    Save Audio Answer
+                  </Button>
 
-                    {/* Submit Screening Round button — only on last question after transcript */}
-                    {showScreeningSubmit && !screeningResult && (
+                  {/* Submit Screening Round button */}
+                  {!screeningSubmitted && (
+                    <div className="space-y-3">
+                      {!allQuestionsRecorded && questions.length > 0 && (
+                        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/30 border border-border/20">
+                          <AlertTriangle className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">
+                            Please record answers for all {questions.length} questions before submitting.
+                            ({savedQuestions.size}/{questions.length} recorded)
+                          </span>
+                        </div>
+                      )}
                       <Button
-                        disabled={isEvaluatingScreening}
+                        disabled={!allQuestionsRecorded || isSubmittingScreening}
                         className="w-full gap-2 h-12 text-base bg-gradient-to-r from-primary to-primary/80"
                         size="lg"
                         onClick={handleSubmitScreening}
                       >
-                        {isEvaluatingScreening ? (
+                        {isSubmittingScreening ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            Evaluating…
+                            Submitting your answers…
                           </>
                         ) : (
                           <>
@@ -432,27 +486,9 @@ const MockInterviewPage = () => {
                           </>
                         )}
                       </Button>
-                    )}
-
-                    {/* Screening result modal */}
-                    {screeningResult && (
-                      <ScreeningResultModal
-                        result={screeningResult}
-                        open={!!screeningResult}
-                        onProceed={() => {
-                          setScreeningResult(null);
-                          setCurrentRound('technical');
-                          setCurrentQuestionIndex(0);
-                          setQuestions([]);
-                          setSubmittedQuestions(new Set());
-                          audioBlobRef.current = null;
-                        }}
-                        onRetake={() => {
-                          setScreeningResult(null);
-                        }}
-                      />
-                    )}
-                  </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Right panel — Environment */}
                 <div className="space-y-6">

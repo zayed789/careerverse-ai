@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import StudentIntelligenceDashboard from '@/components/admin/StudentIntelligenceDashboard';
 
 interface ProfileRow {
   id: string;
@@ -196,6 +197,9 @@ const AdminPage = () => {
             </table>
           </div>
         </motion.section>
+
+        {/* Student Intelligence Dashboard */}
+        <StudentIntelligenceDashboard />
       </div>
     </div>
   );

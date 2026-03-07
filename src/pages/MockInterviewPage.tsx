@@ -26,7 +26,11 @@ function generateSessionId(): string {
   return `session-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
-const SESSION_STORAGE_KEY = 'mock-interview-session';
+const SESSION_STORAGE_KEY_PREFIX = 'mock-interview-session-';
+
+function getSessionStorageKey(userId: string | undefined): string {
+  return `${SESSION_STORAGE_KEY_PREFIX}${userId ?? 'anonymous'}`;
+}
 
 interface PersistedState {
   started: boolean;
@@ -38,16 +42,25 @@ interface PersistedState {
   currentQuestionIndex: number;
   screeningSubmitted: boolean;
   savedQuestionIds: string[];
+  userId?: string;
 }
 
-function loadPersistedState(): PersistedState | null {
+function loadPersistedState(userId: string | undefined): PersistedState | null {
   try {
-    const raw = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    const key = getSessionStorageKey(userId);
+    const raw = sessionStorage.getItem(key);
     if (!raw) return null;
-    return JSON.parse(raw) as PersistedState;
+    const parsed = JSON.parse(raw) as PersistedState;
+    // Only restore if it belongs to the same user
+    if (parsed.userId && userId && parsed.userId !== userId) return null;
+    return parsed;
   } catch {
     return null;
   }
+}
+
+function clearPersistedState(userId: string | undefined) {
+  sessionStorage.removeItem(getSessionStorageKey(userId));
 }
 
 const MockInterviewPage = () => {

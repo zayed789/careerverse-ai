@@ -68,7 +68,8 @@ const MockInterviewPage = () => {
   const { updateScore } = useAppContext();
   const { user } = useAuth();
 
-  const persisted = useRef(loadPersistedState()).current;
+  const userId = user?.id;
+  const persisted = useRef(loadPersistedState(userId)).current;
 
   const [started, setStarted] = useState(persisted?.started ?? false);
   const [previousInterviewScore, setPreviousInterviewScore] = useState<number | null>(null);
@@ -115,6 +116,36 @@ const MockInterviewPage = () => {
   const [questions, setQuestions] = useState<InterviewQuestion[]>(persisted?.questions ?? []);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(persisted?.currentQuestionIndex ?? 0);
 
+  // Clear state when user changes
+  const prevUserIdRef = useRef(userId);
+  useEffect(() => {
+    if (prevUserIdRef.current && userId && prevUserIdRef.current !== userId) {
+      // Different user logged in — reset everything
+      clearPersistedState(prevUserIdRef.current);
+      resetInterview();
+    }
+    prevUserIdRef.current = userId;
+  }, [userId]);
+
+  const resetInterview = () => {
+    setStarted(false);
+    setCandidateName('');
+    setTargetRole('');
+    setSessionId(null);
+    setCurrentRound('screening');
+    setQuestions([]);
+    setCurrentQuestionIndex(0);
+    setScreeningSubmitted(false);
+    setScreeningResult(null);
+    setIsEvaluatingScreening(false);
+    setIsSubmittingScreening(false);
+    setHasRecorded(false);
+    setSavedQuestions(new Set());
+    audioBlobRef.current = null;
+    collectedAudiosRef.current = new Map();
+    clearPersistedState(userId);
+  };
+
   // Persist state to sessionStorage on changes
   useEffect(() => {
     const state: PersistedState = {
@@ -127,9 +158,10 @@ const MockInterviewPage = () => {
       currentQuestionIndex,
       screeningSubmitted,
       savedQuestionIds: Array.from(savedQuestions),
+      userId,
     };
-    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(state));
-  }, [started, candidateName, targetRole, sessionId, currentRound, questions, currentQuestionIndex, screeningSubmitted, savedQuestions]);
+    sessionStorage.setItem(getSessionStorageKey(userId), JSON.stringify(state));
+  }, [started, candidateName, targetRole, sessionId, currentRound, questions, currentQuestionIndex, screeningSubmitted, savedQuestions, userId]);
 
   const currentQuestion = questions.length > 0 ? questions[currentQuestionIndex] : null;
   const isLastQuestion = currentQuestionIndex >= questions.length - 1;

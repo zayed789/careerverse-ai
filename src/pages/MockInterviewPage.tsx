@@ -57,8 +57,9 @@ const MockInterviewPage = () => {
   const [isEvaluatingScreening, setIsEvaluatingScreening] = useState(false);
   const [screeningResult, setScreeningResult] = useState<ScreeningResult | null>(null);
 
-  // Audio blob from recorder
+  // Audio blobs — accumulated per question
   const audioBlobRef = useRef<Blob | null>(null);
+  const collectedAudiosRef = useRef<Map<string, { blob: Blob; questionText: string }>>(new Map());
   const [hasRecorded, setHasRecorded] = useState(false);
 
   // Session & interview progress state

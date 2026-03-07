@@ -43,11 +43,11 @@ const RoadmapGeneratorPage = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          currentRole: currentRole,
-          experience: experience,
-          currentSkills: currentSkills,
-          targetRole: goalRole,
-          previousCompanies: previousCompanies,
+          current_role: currentRole,
+          years_experience: experience,
+          current_skills: currentSkills,
+          target_role: goalRole,
+          previous_companies: previousCompanies,
         }),
       });
 

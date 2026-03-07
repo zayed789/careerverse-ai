@@ -329,13 +329,28 @@ const MockInterviewPage = () => {
       if (!response.ok) throw new Error(`Webhook returned ${response.status}`);
       const data = await response.json();
       const payload = Array.isArray(data) ? data[0] : data;
-      setScreeningResult({
+      const result: ScreeningResult = {
         overall_score: payload.overall_score ?? 0,
         strengths: payload.strengths ?? [],
         weaknesses: payload.weaknesses ?? [],
         passed: payload.passed ?? false,
         reasoning: payload.reasoning ?? '',
-      });
+      };
+      setScreeningResult(result);
+
+      // Persist interview score (0-10 → 0-100) to dashboard & DB
+      const normalizedScore = Math.round(Math.min(100, Math.max(0, result.overall_score * 10)));
+      updateScore('interview', normalizedScore);
+
+      if (user) {
+        await supabase
+          .from('user_metrics')
+          .update({
+            interview_score: normalizedScore,
+            interview_feedback: result.reasoning || '',
+          })
+          .eq('user_id', user.id);
+      }
     } catch (error) {
       console.error('Screening evaluate error:', error);
       toast({

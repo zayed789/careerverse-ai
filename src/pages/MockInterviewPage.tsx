@@ -353,6 +353,7 @@ const MockInterviewPage = () => {
                         question={currentQuestion}
                         currentIndex={currentQuestionIndex + 1}
                         totalQuestions={questions.length}
+                        autoPlay={currentQuestionIndex === 0}
                       />
 
 

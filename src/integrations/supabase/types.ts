@@ -70,10 +70,15 @@ export type Database = {
           ats_feedback: Json | null
           ats_feedback_summary: string | null
           ats_score: number | null
+          cashflow_audit_score: number | null
           consistency_score: number | null
+          corporate_intel_score: number | null
           created_at: string
+          document_intelligence_score: number | null
           dsa_score: number | null
+          due_diligence_score: number | null
           email: string | null
+          gst_validation_score: number | null
           id: string
           interview_feedback: string | null
           interview_round_data: Json | null
@@ -81,6 +86,7 @@ export type Database = {
           keyword_match_percentage: number | null
           name: string | null
           readiness_score: number | null
+          regulatory_risk_score: number | null
           role: string | null
           skill_gap_analysis_summary: string | null
           skill_gap_match_label: string | null
@@ -99,10 +105,15 @@ export type Database = {
           ats_feedback?: Json | null
           ats_feedback_summary?: string | null
           ats_score?: number | null
+          cashflow_audit_score?: number | null
           consistency_score?: number | null
+          corporate_intel_score?: number | null
           created_at?: string
+          document_intelligence_score?: number | null
           dsa_score?: number | null
+          due_diligence_score?: number | null
           email?: string | null
+          gst_validation_score?: number | null
           id?: string
           interview_feedback?: string | null
           interview_round_data?: Json | null
@@ -110,6 +121,7 @@ export type Database = {
           keyword_match_percentage?: number | null
           name?: string | null
           readiness_score?: number | null
+          regulatory_risk_score?: number | null
           role?: string | null
           skill_gap_analysis_summary?: string | null
           skill_gap_match_label?: string | null
@@ -128,10 +140,15 @@ export type Database = {
           ats_feedback?: Json | null
           ats_feedback_summary?: string | null
           ats_score?: number | null
+          cashflow_audit_score?: number | null
           consistency_score?: number | null
+          corporate_intel_score?: number | null
           created_at?: string
+          document_intelligence_score?: number | null
           dsa_score?: number | null
+          due_diligence_score?: number | null
           email?: string | null
+          gst_validation_score?: number | null
           id?: string
           interview_feedback?: string | null
           interview_round_data?: Json | null
@@ -139,6 +156,7 @@ export type Database = {
           keyword_match_percentage?: number | null
           name?: string | null
           readiness_score?: number | null
+          regulatory_risk_score?: number | null
           role?: string | null
           skill_gap_analysis_summary?: string | null
           skill_gap_match_label?: string | null

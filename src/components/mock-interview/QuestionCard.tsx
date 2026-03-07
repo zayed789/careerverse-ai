@@ -1,80 +1,67 @@
-import { useEffect, useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { MessageSquare, Play, Square, Volume2 } from 'lucide-react';
 import type { InterviewQuestion } from './types';
 
 interface QuestionCardProps {
   question: InterviewQuestion;
   currentIndex: number;
   totalQuestions: number;
+  autoPlay?: boolean;
 }
 
-/** Pick the best female voice available in the browser. */
-function pickFemaleVoice(): SpeechSynthesisVoice | null {
-  const voices = speechSynthesis.getVoices();
-  if (voices.length === 0) return null;
+const QuestionCard = ({ question, currentIndex = 1, totalQuestions = 5, autoPlay = false }: QuestionCardProps) => {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const playedAutoRef = useRef<string | null>(null);
 
-  // Preferred female voice name fragments, ordered by quality
-  const preferred = [
-    'samantha',
-    'microsoft zira',
-    'microsoft aria',
-    'microsoft jenny',
-    'google uk english female',
-    'google us english female',
-    'karen',
-    'fiona',
-    'moira',
-    'tessa',
-    'veena',
-  ];
-
-  for (const pref of preferred) {
-    const match = voices.find((v) => v.name.toLowerCase().includes(pref));
-    if (match) return match;
-  }
-
-  // Fallback: any English female-sounding voice, then first English voice
-  const englishVoices = voices.filter((v) => v.lang.startsWith('en'));
-  const femaleGuess = englishVoices.find(
-    (v) =>
-      /female|woman/i.test(v.name) ||
-      /samantha|zira|aria|jenny|karen|fiona|moira|tessa|veena|victoria|allison/i.test(v.name)
-  );
-  return femaleGuess || englishVoices[0] || voices[0];
-}
-
-const QuestionCard = ({ question, currentIndex = 1, totalQuestions = 5 }: QuestionCardProps) => {
-  const spokenIdRef = useRef<string | null>(null);
-
+  // Cleanup audio on unmount or question change
   useEffect(() => {
-    if (!question || spokenIdRef.current === question.id) return;
-
-    spokenIdRef.current = question.id;
-    speechSynthesis.cancel();
-
-    const speak = () => {
-      const utterance = new SpeechSynthesisUtterance(question.text);
-      utterance.rate = 1.0;
-      utterance.pitch = 1;
-      utterance.volume = 1;
-
-      const voice = pickFemaleVoice();
-      if (voice) utterance.voice = voice;
-
-      speechSynthesis.speak(utterance);
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      setIsPlaying(false);
     };
+  }, [question?.id]);
 
-    if (speechSynthesis.getVoices().length > 0) {
-      speak();
-    } else {
-      speechSynthesis.addEventListener('voiceschanged', speak, { once: true });
+  // Auto-play first question when interview starts
+  useEffect(() => {
+    if (autoPlay && question?.audio && playedAutoRef.current !== question.id) {
+      playedAutoRef.current = question.id;
+      playAudio();
+    }
+  }, [autoPlay, question?.id]);
+
+  const playAudio = () => {
+    if (!question?.audio) return;
+
+    // Stop any currently playing audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
     }
 
-    return () => {
-      speechSynthesis.cancel();
-    };
-  }, [question]);
+    const audio = new Audio(`data:audio/mpeg;base64,${question.audio}`);
+    audioRef.current = audio;
+
+    audio.onplay = () => setIsPlaying(true);
+    audio.onended = () => setIsPlaying(false);
+    audio.onpause = () => setIsPlaying(false);
+    audio.onerror = () => setIsPlaying(false);
+
+    audio.play().catch(() => setIsPlaying(false));
+  };
+
+  const stopAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    setIsPlaying(false);
+  };
 
   if (!question) return null;
 
@@ -95,10 +82,30 @@ const QuestionCard = ({ question, currentIndex = 1, totalQuestions = 5 }: Questi
           </span>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
         <p className="text-xl font-medium leading-relaxed text-foreground">
           "{question.text}"
         </p>
+
+        {question.audio && (
+          <Button
+            variant={isPlaying ? 'destructive' : 'outline'}
+            className="gap-2"
+            onClick={isPlaying ? stopAudio : playAudio}
+          >
+            {isPlaying ? (
+              <>
+                <Square className="w-4 h-4" />
+                Stop Audio
+              </>
+            ) : (
+              <>
+                <Volume2 className="w-4 h-4" />
+                Play Question
+              </>
+            )}
+          </Button>
+        )}
       </CardContent>
     </Card>
   );

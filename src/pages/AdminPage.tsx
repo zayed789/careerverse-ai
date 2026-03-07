@@ -197,6 +197,9 @@ const AdminPage = () => {
             </table>
           </div>
         </motion.section>
+
+        {/* Student Intelligence Dashboard */}
+        <StudentIntelligenceDashboard />
       </div>
     </div>
   );

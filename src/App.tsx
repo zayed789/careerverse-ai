@@ -29,6 +29,7 @@ import DsaArenaPage from "./pages/DsaArenaPage";
 import AptitudePage from "./pages/AptitudePage";
 import AdminPage from "./pages/AdminPage";
 import JobSearchPage from "./pages/JobSearchPage";
+import DocumentAIPage from "./pages/DocumentAIPage";
 
 import NotFound from "./pages/NotFound";
 
@@ -64,6 +65,7 @@ const App = () => (
             <Route path="/dsa-arena" element={<ProtectedRoute><DsaArenaPage /></ProtectedRoute>} />
             <Route path="/aptitude" element={<ProtectedRoute><AptitudePage /></ProtectedRoute>} />
             <Route path="/job-search" element={<ProtectedRoute><JobSearchPage /></ProtectedRoute>} />
+            <Route path="/document-ai" element={<ProtectedRoute><DocumentAIPage /></ProtectedRoute>} />
             <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

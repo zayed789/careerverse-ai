@@ -26,11 +26,38 @@ function generateSessionId(): string {
   return `session-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
+const SESSION_STORAGE_KEY = 'mock-interview-session';
+
+interface PersistedState {
+  started: boolean;
+  candidateName: string;
+  targetRole: string;
+  sessionId: string | null;
+  currentRound: InterviewRound;
+  questions: InterviewQuestion[];
+  currentQuestionIndex: number;
+  screeningSubmitted: boolean;
+  savedQuestionIds: string[];
+}
+
+function loadPersistedState(): PersistedState | null {
+  try {
+    const raw = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as PersistedState;
+  } catch {
+    return null;
+  }
+}
+
 const MockInterviewPage = () => {
   const { toast } = useToast();
   const { updateScore } = useAppContext();
   const { user } = useAuth();
-  const [started, setStarted] = useState(false);
+
+  const persisted = useRef(loadPersistedState()).current;
+
+  const [started, setStarted] = useState(persisted?.started ?? false);
   const [previousInterviewScore, setPreviousInterviewScore] = useState<number | null>(null);
 
   // Hydrate previous interview data
@@ -50,12 +77,12 @@ const MockInterviewPage = () => {
   }, [user]);
 
   const [isStarting, setIsStarting] = useState(false);
-  const [candidateName, setCandidateName] = useState('');
-  const [targetRole, setTargetRole] = useState('');
+  const [candidateName, setCandidateName] = useState(persisted?.candidateName ?? '');
+  const [targetRole, setTargetRole] = useState(persisted?.targetRole ?? '');
 
   // Screening submission state
   const [isSubmittingScreening, setIsSubmittingScreening] = useState(false);
-  const [screeningSubmitted, setScreeningSubmitted] = useState(false);
+  const [screeningSubmitted, setScreeningSubmitted] = useState(persisted?.screeningSubmitted ?? false);
 
   // Screening evaluation state
   const [isEvaluatingScreening, setIsEvaluatingScreening] = useState(false);
@@ -67,13 +94,29 @@ const MockInterviewPage = () => {
   const [hasRecorded, setHasRecorded] = useState(false);
 
   // Track which questions have a saved recording
-  const [savedQuestions, setSavedQuestions] = useState<Set<string>>(new Set());
+  const [savedQuestions, setSavedQuestions] = useState<Set<string>>(new Set(persisted?.savedQuestionIds ?? []));
 
   // Session & interview progress state
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [currentRound, setCurrentRound] = useState<InterviewRound>('screening');
-  const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [sessionId, setSessionId] = useState<string | null>(persisted?.sessionId ?? null);
+  const [currentRound, setCurrentRound] = useState<InterviewRound>(persisted?.currentRound ?? 'screening');
+  const [questions, setQuestions] = useState<InterviewQuestion[]>(persisted?.questions ?? []);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(persisted?.currentQuestionIndex ?? 0);
+
+  // Persist state to sessionStorage on changes
+  useEffect(() => {
+    const state: PersistedState = {
+      started,
+      candidateName,
+      targetRole,
+      sessionId,
+      currentRound,
+      questions,
+      currentQuestionIndex,
+      screeningSubmitted,
+      savedQuestionIds: Array.from(savedQuestions),
+    };
+    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(state));
+  }, [started, candidateName, targetRole, sessionId, currentRound, questions, currentQuestionIndex, screeningSubmitted, savedQuestions]);
 
   const currentQuestion = questions.length > 0 ? questions[currentQuestionIndex] : null;
   const isLastQuestion = currentQuestionIndex >= questions.length - 1;

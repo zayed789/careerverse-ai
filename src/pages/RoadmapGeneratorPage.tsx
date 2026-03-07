@@ -213,7 +213,7 @@ const RoadmapGeneratorPage = () => {
                   {isGenerating ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Generating Your Roadmap...
+                      Generating your AI-powered roadmap...
                     </>
                   ) : (
                     <>

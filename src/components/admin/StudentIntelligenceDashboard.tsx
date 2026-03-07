@@ -194,7 +194,7 @@ const StudentIntelligenceDashboard = () => {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 py-5">
-            <TrendingUp className="w-8 h-8 text-green-500" />
+            <TrendingUp className="w-8 h-8 text-primary" />
             <div>
               <p className="text-2xl font-bold">{readyCount}</p>
               <p className="text-xs text-muted-foreground">Ready for Placement</p>

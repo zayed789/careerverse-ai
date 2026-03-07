@@ -57,21 +57,23 @@ const RoadmapGeneratorPage = () => {
 
       const data = await response.json();
 
-      // Handle n8n response format: [{"output": "<JSON string>"}]
+      // Handle n8n response format
       let roadmapData = data;
       if (Array.isArray(data) && data.length > 0 && typeof data[0]?.output === 'string') {
         roadmapData = JSON.parse(data[0].output);
-      } else if (Array.isArray(data) && data.length > 0 && data[0]?.roadmap) {
+      } else if (Array.isArray(data) && data.length > 0 && (data[0]?.phases || data[0]?.roadmap)) {
         roadmapData = data[0];
       }
 
-      if (roadmapData?.roadmap && Array.isArray(roadmapData.roadmap)) {
-        setRoadmapPhases(roadmapData.roadmap);
-        localStorage.setItem('careerverse_generated_roadmap', JSON.stringify(roadmapData.roadmap));
+      const phases = roadmapData?.phases || roadmapData?.roadmap;
+      if (phases && Array.isArray(phases)) {
+        setRoadmapPhases(phases);
+        localStorage.setItem('careerverse_generated_roadmap', JSON.stringify(phases));
       } else {
         throw new Error('Invalid response format');
       }
     } catch (err) {
+      console.error('Roadmap generation error:', err);
       setError('Unable to generate roadmap. Please try again.');
     } finally {
       setIsGenerating(false);

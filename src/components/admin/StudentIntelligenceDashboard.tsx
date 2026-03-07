@@ -17,12 +17,11 @@ interface StudentRow {
   email: string | null;
   role: string | null;
   readiness_score: number | null;
-  corporate_intel_score: number | null;
-  gst_validation_score: number | null;
-  cashflow_audit_score: number | null;
-  document_intelligence_score: number | null;
-  regulatory_risk_score: number | null;
-  due_diligence_score: number | null;
+  dsa_score: number | null;
+  aptitude_score: number | null;
+  ats_score: number | null;
+  skill_gap_score: number | null;
+  interview_score: number | null;
   updated_at: string;
 }
 
@@ -31,24 +30,22 @@ type SortKey = keyof Pick<
   | 'name'
   | 'email'
   | 'readiness_score'
-  | 'corporate_intel_score'
-  | 'gst_validation_score'
-  | 'cashflow_audit_score'
-  | 'document_intelligence_score'
-  | 'regulatory_risk_score'
-  | 'due_diligence_score'
+  | 'dsa_score'
+  | 'aptitude_score'
+  | 'ats_score'
+  | 'skill_gap_score'
+  | 'interview_score'
   | 'updated_at'
 >;
 
 const n = (v: number | null) => v ?? 0;
 
 const scoreFilters: { key: string; label: string }[] = [
-  { key: 'corporate_intel_score', label: 'Corporate Intelligence' },
-  { key: 'gst_validation_score', label: 'GST Validation' },
-  { key: 'cashflow_audit_score', label: 'Cash Flow Audit' },
-  { key: 'document_intelligence_score', label: 'Document Intelligence' },
-  { key: 'regulatory_risk_score', label: 'Regulatory Risk' },
-  { key: 'due_diligence_score', label: 'Due Diligence' },
+  { key: 'dsa_score', label: 'DSA Score' },
+  { key: 'aptitude_score', label: 'Aptitude Score' },
+  { key: 'ats_score', label: 'ATS Score' },
+  { key: 'skill_gap_score', label: 'Skill Gap Score' },
+  { key: 'interview_score', label: 'Interview Score' },
 ];
 
 const StudentIntelligenceDashboard = () => {
@@ -65,7 +62,7 @@ const StudentIntelligenceDashboard = () => {
       const { data } = await supabase
         .from('user_metrics')
         .select(
-          'user_id, name, email, role, readiness_score, corporate_intel_score, gst_validation_score, cashflow_audit_score, document_intelligence_score, regulatory_risk_score, due_diligence_score, updated_at'
+          'user_id, name, email, role, readiness_score, dsa_score, aptitude_score, ats_score, skill_gap_score, interview_score, updated_at'
         );
       if (data) setStudents(data as StudentRow[]);
     };
@@ -143,7 +140,6 @@ const StudentIntelligenceDashboard = () => {
           <CardTitle className="text-base">Filters</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
-          {/* Readiness slider */}
           <div>
             <label className="text-sm text-muted-foreground mb-1 block">
               Readiness Index ≥ {readinessMin}
@@ -243,19 +239,18 @@ const StudentIntelligenceDashboard = () => {
               <SortHeader label="Name" k="name" />
               <SortHeader label="Email" k="email" />
               <SortHeader label="Readiness" k="readiness_score" />
-              <SortHeader label="Corp. Intel" k="corporate_intel_score" />
-              <SortHeader label="GST" k="gst_validation_score" />
-              <SortHeader label="Cash Flow" k="cashflow_audit_score" />
-              <SortHeader label="Doc Intel" k="document_intelligence_score" />
-              <SortHeader label="Reg. Risk" k="regulatory_risk_score" />
-              <SortHeader label="Due Diligence" k="due_diligence_score" />
+              <SortHeader label="DSA" k="dsa_score" />
+              <SortHeader label="Aptitude" k="aptitude_score" />
+              <SortHeader label="ATS" k="ats_score" />
+              <SortHeader label="Skill Gap" k="skill_gap_score" />
+              <SortHeader label="Interview" k="interview_score" />
               <SortHeader label="Updated" k="updated_at" />
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={10} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
                   No students match the current filters.
                 </td>
               </tr>
@@ -268,12 +263,11 @@ const StudentIntelligenceDashboard = () => {
                   <td className="px-3 py-3">{s.name ?? '—'}</td>
                   <td className="px-3 py-3 text-muted-foreground">{s.email ?? '—'}</td>
                   <td className="px-3 py-3 font-semibold gradient-text">{n(s.readiness_score)}</td>
-                  <td className="px-3 py-3">{n(s.corporate_intel_score)}</td>
-                  <td className="px-3 py-3">{n(s.gst_validation_score)}</td>
-                  <td className="px-3 py-3">{n(s.cashflow_audit_score)}</td>
-                  <td className="px-3 py-3">{n(s.document_intelligence_score)}</td>
-                  <td className="px-3 py-3">{n(s.regulatory_risk_score)}</td>
-                  <td className="px-3 py-3">{n(s.due_diligence_score)}</td>
+                  <td className="px-3 py-3">{n(s.dsa_score)}</td>
+                  <td className="px-3 py-3">{n(s.aptitude_score)}</td>
+                  <td className="px-3 py-3">{n(s.ats_score)}</td>
+                  <td className="px-3 py-3">{n(s.skill_gap_score)}</td>
+                  <td className="px-3 py-3">{n(s.interview_score)}</td>
                   <td className="px-3 py-3 text-muted-foreground text-xs">
                     {new Date(s.updated_at).toLocaleDateString()}
                   </td>

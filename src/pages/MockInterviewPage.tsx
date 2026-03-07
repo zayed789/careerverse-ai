@@ -108,6 +108,7 @@ const MockInterviewPage = () => {
         (q: any, i: number) => ({
           id: q?.id || `${payload?.current_round || 'screening'}-q${i + 1}`,
           text: q?.question || q?.text || q,
+          audio: q?.audio || undefined,
         })
       );
       setQuestions(mappedQuestions);

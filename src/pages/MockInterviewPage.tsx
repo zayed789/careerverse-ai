@@ -57,8 +57,9 @@ const MockInterviewPage = () => {
   const [isEvaluatingScreening, setIsEvaluatingScreening] = useState(false);
   const [screeningResult, setScreeningResult] = useState<ScreeningResult | null>(null);
 
-  // Audio blob from recorder
+  // Audio blobs — accumulated per question
   const audioBlobRef = useRef<Blob | null>(null);
+  const collectedAudiosRef = useRef<Map<string, { blob: Blob; questionText: string }>>(new Map());
   const [hasRecorded, setHasRecorded] = useState(false);
 
   // Session & interview progress state
@@ -138,43 +139,57 @@ const MockInterviewPage = () => {
   const handleSubmit = async () => {
     if (!audioBlobRef.current || !currentQuestion || !sessionId) return;
 
-    setIsEvaluating(true);
+    // Store the recording locally
+    collectedAudiosRef.current.set(currentQuestion.id, {
+      blob: audioBlobRef.current,
+      questionText: currentQuestion.text,
+    });
+    setSubmittedQuestions((prev) => new Set(prev).add(currentQuestion.id));
 
-    try {
-      const formData = new FormData();
-      formData.append('audio', audioBlobRef.current, 'recording.webm');
-      formData.append('session_id', sessionId);
-      formData.append('candidate_name', candidateName.trim());
-      formData.append('target_role', targetRole.trim());
-      formData.append('round', currentRound);
-      formData.append('question_id', currentQuestion.id);
-      formData.append('question_text', currentQuestion.text);
+    // If this is the last question, send all recordings to the webhook
+    if (isLastQuestion) {
+      setIsEvaluating(true);
+      try {
+        const formData = new FormData();
+        formData.append('session_id', sessionId);
+        formData.append('candidate_name', candidateName.trim());
+        formData.append('target_role', targetRole.trim());
+        formData.append('round', currentRound);
 
-      const response = await fetch(AUDIO_WEBHOOK_URL, {
-        method: 'POST',
-        body: formData,
-      });
+        let idx = 0;
+        for (const [qId, { blob, questionText }] of collectedAudiosRef.current.entries()) {
+          formData.append(`audio_${idx}`, blob, `recording_${qId}.webm`);
+          formData.append(`question_id_${idx}`, qId);
+          formData.append(`question_text_${idx}`, questionText);
+          idx++;
+        }
+        formData.append('total_questions', String(idx));
 
-      if (!response.ok) {
-        throw new Error(`Webhook returned ${response.status}`);
+        const response = await fetch(AUDIO_WEBHOOK_URL, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) throw new Error(`Webhook returned ${response.status}`);
+      } catch (error) {
+        console.error('Audio webhook error:', error);
+        toast({
+          title: 'Submission failed',
+          description: 'Could not send your recordings. Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsEvaluating(false);
       }
-
-      setSubmittedQuestions((prev) => new Set(prev).add(currentQuestion.id));
-    } catch (error) {
-      console.error('Audio webhook error:', error);
-      toast({
-        title: 'Submission failed',
-        description: 'Could not process your audio. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsEvaluating(false);
     }
+
+    // Reset for next question
+    setHasRecorded(false);
+    audioBlobRef.current = null;
   };
 
   const handleNextQuestion = () => {
     setCurrentQuestionIndex((i) => i + 1);
-    // Reset recording state for next question
     setHasRecorded(false);
     audioBlobRef.current = null;
   };

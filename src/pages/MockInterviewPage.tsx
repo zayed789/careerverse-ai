@@ -487,9 +487,7 @@ const MockInterviewPage = () => {
                         collectedAudiosRef.current = new Map();
                         audioBlobRef.current = null;
                       }}
-                      onRetake={() => {
-                        setScreeningResult(null);
-                      }}
+                      onRetake={resetInterview}
                     />
                   )}
 

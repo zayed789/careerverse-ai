@@ -7,7 +7,7 @@ import { useAppContext } from '@/contexts/AppContext';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
-const ATS_WEBHOOK_URL = 'https://roxx5071.app.n8n.cloud/webhook-test/ats';
+const ATS_WEBHOOK_URL = 'https://roxx5071.app.n8n.cloud/webhook/ats';
 
 interface AtsWebhookResponse {
   ats_score: number;

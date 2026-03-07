@@ -266,6 +266,43 @@ const MockInterviewPage = () => {
     }
   };
 
+  // Evaluate screening answers
+  const handleEvaluateScreening = async () => {
+    if (!sessionId || isEvaluatingScreening) return;
+    setIsEvaluatingScreening(true);
+    try {
+      const response = await fetch(SCREENING_EVALUATE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: sessionId,
+          round: 'screening',
+          candidate_name: candidateName.trim(),
+          target_role: targetRole.trim(),
+        }),
+      });
+      if (!response.ok) throw new Error(`Webhook returned ${response.status}`);
+      const data = await response.json();
+      const payload = Array.isArray(data) ? data[0] : data;
+      setScreeningResult({
+        overall_score: payload.overall_score ?? 0,
+        strengths: payload.strengths ?? [],
+        weaknesses: payload.weaknesses ?? [],
+        passed: payload.passed ?? false,
+        reasoning: payload.reasoning ?? '',
+      });
+    } catch (error) {
+      console.error('Screening evaluate error:', error);
+      toast({
+        title: 'Evaluation failed',
+        description: 'Unable to evaluate screening answers. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsEvaluatingScreening(false);
+    }
+  };
+
   // Key for remounting AudioRecorder on question change
   const recorderKey = currentQuestion?.id || 'no-question';
 

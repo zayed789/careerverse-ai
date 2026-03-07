@@ -146,7 +146,7 @@ const MockInterviewPage = () => {
       formData.append('session_id', sessionId);
       formData.append('candidate_name', candidateName.trim());
       formData.append('target_role', targetRole.trim());
-      formData.append('round', 'screening');
+      formData.append('round', currentRound);
       formData.append('question_id', currentQuestion.id);
       formData.append('question_text', currentQuestion.text);
 

@@ -405,6 +405,28 @@ const MockInterviewPage = () => {
                     ))}
                   </div>
 
+                  {/* Evaluate button */}
+                  {!screeningResult && (
+                    <Button
+                      className="w-full gap-2 h-12 text-base bg-gradient-to-r from-primary to-primary/80 mt-4"
+                      size="lg"
+                      disabled={isEvaluatingScreening}
+                      onClick={handleEvaluateScreening}
+                    >
+                      {isEvaluatingScreening ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Analyzing your interview responses...
+                        </>
+                      ) : (
+                        <>
+                          <ClipboardCheck className="w-4 h-4" />
+                          Get Screening Evaluation
+                        </>
+                      )}
+                    </Button>
+                  )}
+
                   {/* Screening result modal */}
                   {screeningResult && (
                     <ScreeningResultModal

@@ -203,7 +203,7 @@ const StudentIntelligenceDashboard = () => {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 py-5">
-            <AlertTriangle className="w-8 h-8 text-yellow-500" />
+            <AlertTriangle className="w-8 h-8 text-destructive" />
             <div>
               <p className="text-2xl font-bold">{needsImprovement}</p>
               <p className="text-xs text-muted-foreground">Needs Improvement</p>

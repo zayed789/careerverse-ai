@@ -28,6 +28,7 @@ import DashboardPage from "./pages/DashboardPage";
 import DsaArenaPage from "./pages/DsaArenaPage";
 import AptitudePage from "./pages/AptitudePage";
 import AdminPage from "./pages/AdminPage";
+import JobSearchPage from "./pages/JobSearchPage";
 
 import NotFound from "./pages/NotFound";
 

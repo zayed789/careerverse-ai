@@ -492,6 +492,16 @@ const MockInterviewPage = () => {
                       }}
                     />
                   )}
+
+                  {/* Start Interview Again button */}
+                  <Button
+                    variant="outline"
+                    className="w-full gap-2 h-11 mt-4"
+                    onClick={resetInterview}
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    Start Interview Again
+                  </Button>
                 </CardContent>
               </Card>
             </motion.div>

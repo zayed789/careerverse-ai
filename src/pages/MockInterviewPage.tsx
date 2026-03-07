@@ -19,7 +19,7 @@ import type { InterviewRound, InterviewQuestion } from '@/components/mock-interv
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
-const AUDIO_WEBHOOK_URL = 'https://roxx5071.app.n8n.cloud/webhook/audio-to-text';
+const AUDIO_WEBHOOK_URL = 'https://roxx5071.app.n8n.cloud/webhook-test/audio-to-text';
 const SCREENING_EVALUATE_URL = 'https://roxx5071.app.n8n.cloud/webhook-test/screening_evaluate';
 
 function generateSessionId(): string {

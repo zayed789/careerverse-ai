@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import { Mic, Send, Loader2, ChevronRight, ClipboardCheck, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Mic, Send, Loader2, ChevronRight, ClipboardCheck, CheckCircle2, AlertTriangle, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '@/components/layout/Layout';
 import { useAppContext } from '@/contexts/AppContext';
@@ -26,7 +26,11 @@ function generateSessionId(): string {
   return `session-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
-const SESSION_STORAGE_KEY = 'mock-interview-session';
+const SESSION_STORAGE_KEY_PREFIX = 'mock-interview-session-';
+
+function getSessionStorageKey(userId: string | undefined): string {
+  return `${SESSION_STORAGE_KEY_PREFIX}${userId ?? 'anonymous'}`;
+}
 
 interface PersistedState {
   started: boolean;
@@ -38,16 +42,25 @@ interface PersistedState {
   currentQuestionIndex: number;
   screeningSubmitted: boolean;
   savedQuestionIds: string[];
+  userId?: string;
 }
 
-function loadPersistedState(): PersistedState | null {
+function loadPersistedState(userId: string | undefined): PersistedState | null {
   try {
-    const raw = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    const key = getSessionStorageKey(userId);
+    const raw = sessionStorage.getItem(key);
     if (!raw) return null;
-    return JSON.parse(raw) as PersistedState;
+    const parsed = JSON.parse(raw) as PersistedState;
+    // Only restore if it belongs to the same user
+    if (parsed.userId && userId && parsed.userId !== userId) return null;
+    return parsed;
   } catch {
     return null;
   }
+}
+
+function clearPersistedState(userId: string | undefined) {
+  sessionStorage.removeItem(getSessionStorageKey(userId));
 }
 
 const MockInterviewPage = () => {
@@ -55,7 +68,8 @@ const MockInterviewPage = () => {
   const { updateScore } = useAppContext();
   const { user } = useAuth();
 
-  const persisted = useRef(loadPersistedState()).current;
+  const userId = user?.id;
+  const persisted = useRef(loadPersistedState(userId)).current;
 
   const [started, setStarted] = useState(persisted?.started ?? false);
   const [previousInterviewScore, setPreviousInterviewScore] = useState<number | null>(null);
@@ -102,6 +116,36 @@ const MockInterviewPage = () => {
   const [questions, setQuestions] = useState<InterviewQuestion[]>(persisted?.questions ?? []);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(persisted?.currentQuestionIndex ?? 0);
 
+  // Clear state when user changes
+  const prevUserIdRef = useRef(userId);
+  useEffect(() => {
+    if (prevUserIdRef.current && userId && prevUserIdRef.current !== userId) {
+      // Different user logged in — reset everything
+      clearPersistedState(prevUserIdRef.current);
+      resetInterview();
+    }
+    prevUserIdRef.current = userId;
+  }, [userId]);
+
+  const resetInterview = () => {
+    setStarted(false);
+    setCandidateName('');
+    setTargetRole('');
+    setSessionId(null);
+    setCurrentRound('screening');
+    setQuestions([]);
+    setCurrentQuestionIndex(0);
+    setScreeningSubmitted(false);
+    setScreeningResult(null);
+    setIsEvaluatingScreening(false);
+    setIsSubmittingScreening(false);
+    setHasRecorded(false);
+    setSavedQuestions(new Set());
+    audioBlobRef.current = null;
+    collectedAudiosRef.current = new Map();
+    clearPersistedState(userId);
+  };
+
   // Persist state to sessionStorage on changes
   useEffect(() => {
     const state: PersistedState = {
@@ -114,9 +158,10 @@ const MockInterviewPage = () => {
       currentQuestionIndex,
       screeningSubmitted,
       savedQuestionIds: Array.from(savedQuestions),
+      userId,
     };
-    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(state));
-  }, [started, candidateName, targetRole, sessionId, currentRound, questions, currentQuestionIndex, screeningSubmitted, savedQuestions]);
+    sessionStorage.setItem(getSessionStorageKey(userId), JSON.stringify(state));
+  }, [started, candidateName, targetRole, sessionId, currentRound, questions, currentQuestionIndex, screeningSubmitted, savedQuestions, userId]);
 
   const currentQuestion = questions.length > 0 ? questions[currentQuestionIndex] : null;
   const isLastQuestion = currentQuestionIndex >= questions.length - 1;
@@ -442,11 +487,19 @@ const MockInterviewPage = () => {
                         collectedAudiosRef.current = new Map();
                         audioBlobRef.current = null;
                       }}
-                      onRetake={() => {
-                        setScreeningResult(null);
-                      }}
+                      onRetake={resetInterview}
                     />
                   )}
+
+                  {/* Start Interview Again button */}
+                  <Button
+                    variant="outline"
+                    className="w-full gap-2 h-11 mt-4"
+                    onClick={resetInterview}
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    Start Interview Again
+                  </Button>
                 </CardContent>
               </Card>
             </motion.div>

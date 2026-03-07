@@ -20,7 +20,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
 const AUDIO_WEBHOOK_URL = 'https://roxx5071.app.n8n.cloud/webhook-test/audio-to-text';
-const SCREENING_EVALUATE_URL = 'https://roxx5071.app.n8n.cloud/webhook-test/screening_evaluate';
+const SCREENING_EVALUATE_URL = 'https://roxx5071.app.n8n.cloud/webhook-test/screening-evaluate';
 
 function generateSessionId(): string {
   return `session-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -266,6 +266,43 @@ const MockInterviewPage = () => {
     }
   };
 
+  // Evaluate screening answers
+  const handleEvaluateScreening = async () => {
+    if (!sessionId || isEvaluatingScreening) return;
+    setIsEvaluatingScreening(true);
+    try {
+      const response = await fetch(SCREENING_EVALUATE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id: sessionId,
+          round: 'screening',
+          candidate_name: candidateName.trim(),
+          target_role: targetRole.trim(),
+        }),
+      });
+      if (!response.ok) throw new Error(`Webhook returned ${response.status}`);
+      const data = await response.json();
+      const payload = Array.isArray(data) ? data[0] : data;
+      setScreeningResult({
+        overall_score: payload.overall_score ?? 0,
+        strengths: payload.strengths ?? [],
+        weaknesses: payload.weaknesses ?? [],
+        passed: payload.passed ?? false,
+        reasoning: payload.reasoning ?? '',
+      });
+    } catch (error) {
+      console.error('Screening evaluate error:', error);
+      toast({
+        title: 'Evaluation failed',
+        description: 'Unable to evaluate screening answers. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsEvaluatingScreening(false);
+    }
+  };
+
   // Key for remounting AudioRecorder on question change
   const recorderKey = currentQuestion?.id || 'no-question';
 
@@ -367,6 +404,28 @@ const MockInterviewPage = () => {
                       </div>
                     ))}
                   </div>
+
+                  {/* Evaluate button */}
+                  {!screeningResult && (
+                    <Button
+                      className="w-full gap-2 h-12 text-base bg-gradient-to-r from-primary to-primary/80 mt-4"
+                      size="lg"
+                      disabled={isEvaluatingScreening}
+                      onClick={handleEvaluateScreening}
+                    >
+                      {isEvaluatingScreening ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Analyzing your interview responses...
+                        </>
+                      ) : (
+                        <>
+                          <ClipboardCheck className="w-4 h-4" />
+                          Get Screening Evaluation
+                        </>
+                      )}
+                    </Button>
+                  )}
 
                   {/* Screening result modal */}
                   {screeningResult && (

@@ -30,6 +30,7 @@ import AptitudePage from "./pages/AptitudePage";
 import AdminPage from "./pages/AdminPage";
 import JobSearchPage from "./pages/JobSearchPage";
 import DocumentAIPage from "./pages/DocumentAIPage";
+import DocumentAIPage from "./pages/DocumentAIPage";
 
 import NotFound from "./pages/NotFound";
 

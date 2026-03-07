@@ -22,6 +22,7 @@ const studentNavItems = [
   { path: '/resume-builder', icon: FileText, label: 'Resume Builder' },
   { path: '/skill-gap', icon: BarChart3, label: 'Skill Gap Analyzer' },
   { path: '/mock-interview', icon: AudioWaveform, label: 'Mock Interview' },
+  { path: '/job-search', icon: Search, label: 'Job Search' },
   { path: '/planner', icon: Calendar, label: 'Planner' },
   { path: '/help', icon: HelpCircle, label: 'Help' },
 ];

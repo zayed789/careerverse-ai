@@ -84,35 +84,28 @@ const DocumentChatPage = () => {
     setUploadProgress(10);
 
     try {
-      // Upload to storage
-      const filePath = `${user.id}/${Date.now()}_${file.name}`;
       setUploadProgress(30);
-      const { error: uploadError } = await supabase.storage
-        .from('documents')
-        .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
-      setUploadProgress(60);
+      // Send PDF file directly to n8n webhook as multipart form data
+      const formData = new FormData();
+      formData.append('file', file, file.name);
+      formData.append('file_name', file.name);
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('documents')
-        .getPublicUrl(filePath);
-      const fileUrl = urlData.publicUrl;
+      setUploadProgress(50);
 
-      // Save to documents table
-      const { error: dbError } = await supabase
-        .from('documents')
-        .insert({ user_id: user.id, file_name: file.name, file_url: fileUrl, status: 'processing' });
-      if (dbError) throw dbError;
+      const webhookRes = await fetch(DOC_UPLOAD_WEBHOOK, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!webhookRes.ok) throw new Error('Webhook upload failed');
       setUploadProgress(80);
 
-      // Send to ingestion webhook
-      await fetch(DOC_UPLOAD_WEBHOOK, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file_url: fileUrl, file_name: file.name }),
-      });
+      // Save to documents table for tracking
+      const { error: dbError } = await supabase
+        .from('documents')
+        .insert({ user_id: user.id, file_name: file.name, file_url: '', status: 'processing' });
+      if (dbError) throw dbError;
 
       setUploadProgress(100);
       toast({ title: 'Upload successful', description: 'Document uploaded successfully. AI indexing has started.' });

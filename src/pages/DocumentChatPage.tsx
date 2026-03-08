@@ -120,7 +120,7 @@ const DocumentChatPage = () => {
       toast({ title: 'Upload successful', description: 'Document uploaded and processing started.' });
       fetchDocuments();
     } catch (err: any) {
-      toast({ title: 'Upload failed', description: err.message || 'Something went wrong.', variant: 'destructive' });
+      toast({ title: 'Upload failed', description: 'Document upload failed.', variant: 'destructive' });
     } finally {
       setUploading(false);
       setTimeout(() => setUploadProgress(0), 1000);

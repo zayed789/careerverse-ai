@@ -43,6 +43,7 @@ const DocumentChatPage = () => {
 
   const [documents, setDocuments] = useState<UploadedDoc[]>([]);
   const [selectedDoc, setSelectedDoc] = useState<UploadedDoc | null>(null);
+  const [docFiles, setDocFiles] = useState<Map<string, File>>(new Map());
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [dragOver, setDragOver] = useState(false);

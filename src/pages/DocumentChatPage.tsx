@@ -104,10 +104,17 @@ const DocumentChatPage = () => {
       setUploadProgress(80);
 
       // Save to documents table for tracking
-      const { error: dbError } = await supabase
+      const { data: insertedDoc, error: dbError } = await supabase
         .from('documents')
-        .insert({ user_id: user.id, file_name: file.name, file_url: '', status: 'processing' });
+        .insert({ user_id: user.id, file_name: file.name, file_url: '', status: 'processing' })
+        .select()
+        .single();
       if (dbError) throw dbError;
+
+      // Store file in memory for later queries
+      if (insertedDoc) {
+        setDocFiles((prev) => new Map(prev).set(insertedDoc.id, file));
+      }
 
       setUploadProgress(100);
       toast({ title: 'Upload successful', description: 'Document uploaded successfully. AI indexing has started.' });

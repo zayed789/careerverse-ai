@@ -17,7 +17,7 @@ import {
 import ReactMarkdown from 'react-markdown';
 
 const DOC_UPLOAD_WEBHOOK = 'https://roxx5071.app.n8n.cloud/webhook-test/doc_upload';
-const DOC_QUERY_WEBHOOK = 'https://roxx5071.app.n8n.cloud/webhook-test/doc_upload';
+const DOC_QUERY_WEBHOOK = 'https://roxx5071.app.n8n.cloud/webhook-test/doc_query';
 
 interface ChatMessage {
   id: string;

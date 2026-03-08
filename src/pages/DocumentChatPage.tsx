@@ -16,8 +16,7 @@ import {
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
-const DOC_UPLOAD_WEBHOOK = 'https://roxx5071.app.n8n.cloud/webhook-test/doc_upload';
-const DOC_QUERY_WEBHOOK = 'https://roxx5071.app.n8n.cloud/webhook-test/doc_query';
+const DOC_WEBHOOK = 'https://roxx5071.app.n8n.cloud/webhook-test/doc_upload';
 
 interface ChatMessage {
   id: string;
@@ -83,44 +82,30 @@ const DocumentChatPage = () => {
     }
 
     setUploading(true);
-    setUploadProgress(10);
+    setUploadProgress(30);
 
     try {
-      setUploadProgress(30);
-
-      // Send PDF file directly to n8n webhook as multipart form data
-      const formData = new FormData();
-      formData.append('file', file, file.name);
-      formData.append('file_name', file.name);
-
-      setUploadProgress(50);
-
-      const webhookRes = await fetch(DOC_UPLOAD_WEBHOOK, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!webhookRes.ok) throw new Error('Webhook upload failed');
-      setUploadProgress(80);
-
       // Save to documents table for tracking
       const { data: insertedDoc, error: dbError } = await supabase
         .from('documents')
-        .insert({ user_id: user.id, file_name: file.name, file_url: '', status: 'processing' })
+        .insert({ user_id: user.id, file_name: file.name, file_url: '', status: 'ready' })
         .select()
         .single();
       if (dbError) throw dbError;
 
+      setUploadProgress(70);
+
       // Store file in memory for later queries
       if (insertedDoc) {
         setDocFiles((prev) => new Map(prev).set(insertedDoc.id, file));
+        setSelectedDoc(insertedDoc);
       }
 
       setUploadProgress(100);
-      toast({ title: 'Upload successful', description: 'Document uploaded and processing started.' });
+      toast({ title: 'File added', description: 'Document ready. Ask a question to start.' });
       fetchDocuments();
     } catch (err: any) {
-      toast({ title: 'Upload failed', description: 'Document upload failed.', variant: 'destructive' });
+      toast({ title: 'Failed', description: 'Could not add document.', variant: 'destructive' });
     } finally {
       setUploading(false);
       setTimeout(() => setUploadProgress(0), 1000);
@@ -144,7 +129,9 @@ const DocumentChatPage = () => {
   };
 
   const handleSend = async () => {
-    if (!query.trim()) return;
+    if (!query.trim() || !selectedDoc) return;
+
+    const file = docFiles.get(selectedDoc.id);
 
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
@@ -157,13 +144,19 @@ const DocumentChatPage = () => {
     setQuerying(true);
 
     try {
-      const res = await fetch(DOC_QUERY_WEBHOOK, {
+      const formData = new FormData();
+      formData.append('query', userMsg.content);
+      formData.append('file_name', selectedDoc.file_name);
+      if (file) {
+        formData.append('file', file, file.name);
+      }
+
+      const res = await fetch(DOC_WEBHOOK, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: userMsg.content }),
+        body: formData,
       });
 
-      if (!res.ok) throw new Error('Backend request failed');
+      if (!res.ok) throw new Error('Request failed');
       const data = await res.json();
 
       let rawContent = '';
@@ -189,7 +182,7 @@ const DocumentChatPage = () => {
       const errMsg: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: 'Unable to retrieve answer.',
+        content: 'Unable to process the document or retrieve an answer. Please try again.',
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errMsg]);
@@ -389,14 +382,14 @@ const DocumentChatPage = () => {
                   <Input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Ask a question about the uploaded document..."
-                    disabled={querying}
+                    placeholder={selectedDoc ? `Ask about ${selectedDoc.file_name}...` : 'Select a document first...'}
+                    disabled={!selectedDoc || querying}
                     className="flex-1"
                   />
                   <Button
                     type="submit"
                     size="icon"
-                    disabled={!query.trim() || querying}
+                    disabled={!selectedDoc || !query.trim() || querying}
                   >
                     <Send className="w-4 h-4" />
                   </Button>

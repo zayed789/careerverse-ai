@@ -23,6 +23,7 @@ const studentNavItems = [
   { path: '/skill-gap', icon: BarChart3, label: 'Skill Gap Analyzer' },
   { path: '/mock-interview', icon: AudioWaveform, label: 'Mock Interview' },
   { path: '/job-search', icon: Search, label: 'Job Search' },
+  { path: '/document-chat', icon: FileSearch, label: 'AI Document Chat' },
   
   { path: '/planner', icon: Calendar, label: 'Planner' },
   { path: '/help', icon: HelpCircle, label: 'Help' },

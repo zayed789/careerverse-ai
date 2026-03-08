@@ -157,10 +157,19 @@ const DocumentChatPage = () => {
     setQuerying(true);
 
     try {
+      const formData = new FormData();
+      formData.append('query', userMsg.content);
+      formData.append('document_name', selectedDoc.file_name);
+
+      // Attach the actual PDF file if available
+      const file = docFiles.get(selectedDoc.id);
+      if (file) {
+        formData.append('file', file, file.name);
+      }
+
       const res = await fetch(DOC_QUERY_WEBHOOK, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: userMsg.content, document_name: selectedDoc.file_name }),
+        body: formData,
       });
 
       if (!res.ok) throw new Error('Backend request failed');

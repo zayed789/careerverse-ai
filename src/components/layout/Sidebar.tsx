@@ -5,7 +5,7 @@ import {
   Home, Map, Sparkles, BookOpen, FileText, BarChart3,
   Calendar, HelpCircle, ChevronLeft, ChevronRight,
   Compass, Zap, AudioWaveform, LayoutDashboard, Code2, Brain,
-  Shield, Search,
+  Shield, Search, FileSearch,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';

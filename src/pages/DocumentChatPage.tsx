@@ -390,13 +390,13 @@ const DocumentChatPage = () => {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Ask a question about the uploaded document..."
-                    disabled={!selectedDoc || querying}
+                    disabled={querying}
                     className="flex-1"
                   />
                   <Button
                     type="submit"
                     size="icon"
-                    disabled={!selectedDoc || !query.trim() || querying}
+                    disabled={!query.trim() || querying}
                   >
                     <Send className="w-4 h-4" />
                   </Button>

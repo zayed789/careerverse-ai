@@ -182,7 +182,7 @@ const DocumentChatPage = () => {
       const errMsg: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: 'Sorry, something went wrong. The document may not be indexed yet. Please try again later.',
+        content: 'Unable to retrieve answer. Please try again.',
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errMsg]);

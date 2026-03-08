@@ -144,7 +144,7 @@ const DocumentChatPage = () => {
   };
 
   const handleSend = async () => {
-    if (!query.trim() || !selectedDoc) return;
+    if (!query.trim()) return;
 
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
@@ -157,25 +157,15 @@ const DocumentChatPage = () => {
     setQuerying(true);
 
     try {
-      const formData = new FormData();
-      formData.append('query', userMsg.content);
-      formData.append('document_name', selectedDoc.file_name);
-
-      // Attach the actual PDF file if available
-      const file = docFiles.get(selectedDoc.id);
-      if (file) {
-        formData.append('file', file, file.name);
-      }
-
       const res = await fetch(DOC_QUERY_WEBHOOK, {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: userMsg.content }),
       });
 
       if (!res.ok) throw new Error('Backend request failed');
       const data = await res.json();
 
-      // Extract text from answer or output, handle nested JSON
       let rawContent = '';
       if (typeof data === 'string') {
         rawContent = data;
@@ -199,7 +189,7 @@ const DocumentChatPage = () => {
       const errMsg: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: 'Unable to retrieve answer. Please try again.',
+        content: 'Unable to retrieve answer.',
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errMsg]);

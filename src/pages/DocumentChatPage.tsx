@@ -158,10 +158,22 @@ const DocumentChatPage = () => {
       if (!res.ok) throw new Error('Backend request failed');
       const data = await res.json();
 
+      // Extract text from answer or output, handle nested JSON
+      let rawContent = '';
+      if (typeof data === 'string') {
+        rawContent = data;
+      } else if (data.answer) {
+        rawContent = typeof data.answer === 'string' ? data.answer : JSON.stringify(data.answer);
+      } else if (data.output) {
+        rawContent = typeof data.output === 'string' ? data.output : JSON.stringify(data.output);
+      } else {
+        rawContent = 'No response received.';
+      }
+
       const botMsg: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: data.answer || data.output || 'No response received.',
+        content: rawContent,
         sources: data.sources,
         timestamp: new Date(),
       };

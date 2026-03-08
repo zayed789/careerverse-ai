@@ -14,6 +14,7 @@ import {
   Upload, FileText, Send, Bot, User, Loader2, X,
   MessageSquare, AlertCircle, CheckCircle2, Trash2,
 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 const DOC_UPLOAD_WEBHOOK = 'https://roxx5071.app.n8n.cloud/webhook-test/doc_upload';
 const DOC_QUERY_WEBHOOK = 'https://roxx5071.app.n8n.cloud/webhook-test/doc_upload';

@@ -43,6 +43,7 @@ const DocumentChatPage = () => {
 
   const [documents, setDocuments] = useState<UploadedDoc[]>([]);
   const [selectedDoc, setSelectedDoc] = useState<UploadedDoc | null>(null);
+  const [docFiles, setDocFiles] = useState<Map<string, File>>(new Map());
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [dragOver, setDragOver] = useState(false);
@@ -103,10 +104,17 @@ const DocumentChatPage = () => {
       setUploadProgress(80);
 
       // Save to documents table for tracking
-      const { error: dbError } = await supabase
+      const { data: insertedDoc, error: dbError } = await supabase
         .from('documents')
-        .insert({ user_id: user.id, file_name: file.name, file_url: '', status: 'processing' });
+        .insert({ user_id: user.id, file_name: file.name, file_url: '', status: 'processing' })
+        .select()
+        .single();
       if (dbError) throw dbError;
+
+      // Store file in memory for later queries
+      if (insertedDoc) {
+        setDocFiles((prev) => new Map(prev).set(insertedDoc.id, file));
+      }
 
       setUploadProgress(100);
       toast({ title: 'Upload successful', description: 'Document uploaded successfully. AI indexing has started.' });
@@ -149,10 +157,19 @@ const DocumentChatPage = () => {
     setQuerying(true);
 
     try {
+      const formData = new FormData();
+      formData.append('query', userMsg.content);
+      formData.append('document_name', selectedDoc.file_name);
+
+      // Attach the actual PDF file if available
+      const file = docFiles.get(selectedDoc.id);
+      if (file) {
+        formData.append('file', file, file.name);
+      }
+
       const res = await fetch(DOC_QUERY_WEBHOOK, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: userMsg.content, document_name: selectedDoc.file_name }),
+        body: formData,
       });
 
       if (!res.ok) throw new Error('Backend request failed');

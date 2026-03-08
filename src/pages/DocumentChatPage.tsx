@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 const DOC_UPLOAD_WEBHOOK = 'https://roxx5071.app.n8n.cloud/webhook-test/doc_upload';
-const DOC_QUERY_WEBHOOK = 'https://roxx5071.app.n8n.cloud/webhook-test/doc_query';
+const DOC_QUERY_WEBHOOK = 'https://roxx5071.app.n8n.cloud/webhook-test/doc_upload';
 
 interface ChatMessage {
   id: string;

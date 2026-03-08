@@ -337,7 +337,13 @@ const DocumentChatPage = () => {
                             ? 'bg-primary text-primary-foreground rounded-br-md'
                             : 'bg-muted text-foreground rounded-bl-md'
                         )}>
-                          <p className="whitespace-pre-wrap">{msg.content}</p>
+                          {msg.role === 'assistant' ? (
+                            <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2 [&>ul]:mb-2 [&>ol]:mb-2 [&>h1]:text-base [&>h2]:text-sm [&>h3]:text-sm [&>li]:my-0.5">
+                              <ReactMarkdown>{msg.content}</ReactMarkdown>
+                            </div>
+                          ) : (
+                            <p className="whitespace-pre-wrap">{msg.content}</p>
+                          )}
                           {msg.sources && msg.sources.length > 0 && (
                             <div className="mt-2 pt-2 border-t border-border/30 space-y-1">
                               <p className="text-xs font-medium opacity-70">Sources:</p>

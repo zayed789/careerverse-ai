@@ -117,7 +117,7 @@ const DocumentChatPage = () => {
       }
 
       setUploadProgress(100);
-      toast({ title: 'Upload successful', description: 'Document uploaded successfully. Processing has started.' });
+      toast({ title: 'Upload successful', description: 'Document uploaded and processing started.' });
       fetchDocuments();
     } catch (err: any) {
       toast({ title: 'Upload failed', description: err.message || 'Something went wrong.', variant: 'destructive' });

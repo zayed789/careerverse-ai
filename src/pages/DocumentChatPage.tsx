@@ -82,44 +82,30 @@ const DocumentChatPage = () => {
     }
 
     setUploading(true);
-    setUploadProgress(10);
+    setUploadProgress(30);
 
     try {
-      setUploadProgress(30);
-
-      // Send PDF file directly to n8n webhook as multipart form data
-      const formData = new FormData();
-      formData.append('file', file, file.name);
-      formData.append('file_name', file.name);
-
-      setUploadProgress(50);
-
-      const webhookRes = await fetch(DOC_UPLOAD_WEBHOOK, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!webhookRes.ok) throw new Error('Webhook upload failed');
-      setUploadProgress(80);
-
       // Save to documents table for tracking
       const { data: insertedDoc, error: dbError } = await supabase
         .from('documents')
-        .insert({ user_id: user.id, file_name: file.name, file_url: '', status: 'processing' })
+        .insert({ user_id: user.id, file_name: file.name, file_url: '', status: 'ready' })
         .select()
         .single();
       if (dbError) throw dbError;
 
+      setUploadProgress(70);
+
       // Store file in memory for later queries
       if (insertedDoc) {
         setDocFiles((prev) => new Map(prev).set(insertedDoc.id, file));
+        setSelectedDoc(insertedDoc);
       }
 
       setUploadProgress(100);
-      toast({ title: 'Upload successful', description: 'Document uploaded and processing started.' });
+      toast({ title: 'File added', description: 'Document ready. Ask a question to start.' });
       fetchDocuments();
     } catch (err: any) {
-      toast({ title: 'Upload failed', description: 'Document upload failed.', variant: 'destructive' });
+      toast({ title: 'Failed', description: 'Could not add document.', variant: 'destructive' });
     } finally {
       setUploading(false);
       setTimeout(() => setUploadProgress(0), 1000);

@@ -183,7 +183,7 @@ Dashboard analytics visuals
 
 🚀 Getting Started (Local Setup)
 1️⃣ Clone the Repository
-git clone https://github.com/yourusername/careerverse-ai.git
+git clone https://github.com/zayed789/careerverse-ai.git
 cd careerverse-ai
 2️⃣ Install Dependencies
 npm install
